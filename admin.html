@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Admin — Rifa STEM v4</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--s1:#1a1d26;--s2:#222635;--s3:#2a2f45;
+  --border:#2e3347;--border2:#3d4260;
+  --green:#22c55e;--gd:#15803d;--gbg:#052e16;
+  --yellow:#f59e0b;--yd:#b45309;--ybg:#2d1a00;
+  --red:#ef4444;--rd:#b91c1c;--rbg:#2d0a0a;
+  --blue:#3b82f6;--bd:#1d4ed8;--bbg:#0c1a3d;
+  --purple:#a855f7;--pd:#7c3aed;--pbg:#1a0d2e;
+  --gold:#fbbf24;
+  --txt:#e2e8f0;--txt2:#94a3b8;--txt3:#64748b;--r:10px;
+}
+body{font-family:"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+
+/* ── LOGIN ── */
+.lw{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.lc{background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:36px 28px;width:100%;max-width:340px}
+.llogo{text-align:center;margin-bottom:24px}
+.licon{width:56px;height:56px;background:var(--bbg);border:1px solid var(--blue);border-radius:14px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:26px}
+.llogo h1{font-size:20px;font-weight:700}
+.llogo p{font-size:12px;color:var(--txt2);margin-top:3px}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;font-weight:500}
+.fg input{width:100%;padding:10px 13px;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:15px;outline:none;transition:border .2s}
+.fg input:focus{border-color:var(--blue)}
+.btnp{width:100%;padding:11px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .15s}
+.btnp:hover{opacity:.87}.btnp:disabled{opacity:.45;cursor:default}
+.lerr{color:var(--red);font-size:13px;text-align:center;margin-top:9px;min-height:18px}
+
+/* ── PANEL ── */
+#panel{display:none}
+.topbar{background:var(--s1);border-bottom:1px solid var(--border);padding:11px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;gap:10px;flex-wrap:wrap}
+.tb-l{display:flex;align-items:center;gap:10px}
+.tb-h{font-size:15px;font-weight:600}
+.cdot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pls 2s infinite}
+@keyframes pls{0%,100%{opacity:1}50%{opacity:.3}}
+.ctxt{font-size:12px;color:var(--green)}
+.bout{padding:6px 13px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--txt3);font-size:12px;cursor:pointer}
+.bout:hover{border-color:var(--red);color:var(--red)}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:2px;background:var(--s2);border-bottom:1px solid var(--border);padding:0 16px;overflow-x:auto}
+.tab{padding:11px 16px;font-size:13px;font-weight:500;color:var(--txt3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s,border .15s}
+.tab.act{color:var(--blue);border-color:var(--blue)}
+
+.main{max-width:1080px;margin:0 auto;padding:16px}
+.cbanner{background:var(--rbg);border:1px solid var(--rd);border-radius:8px;padding:9px 14px;font-size:13px;color:var(--red);margin-bottom:12px;display:none}
+.cbanner.show{display:flex;align-items:center;gap:8px}
+
+/* ── STATS ── */
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+.sc{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px 12px;text-align:center}
+.sc .n{font-size:26px;font-weight:700}.sc .l{font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.sc.g{border-color:var(--gd)}.sc.g .n{color:var(--green)}
+.sc.y{border-color:var(--yd)}.sc.y .n{color:var(--yellow)}
+.sc.r{border-color:var(--rd)}.sc.r .n{color:var(--red)}
+.sc.b .n{color:var(--blue)}
+.prog{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:14px}
+.pt{display:flex;justify-content:space-between;font-size:12px;color:var(--txt2);margin-bottom:5px}
+.pb{height:7px;background:var(--border);border-radius:4px;overflow:hidden}
+.pf{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--green),var(--yellow));transition:width .6s}
+.pm{font-size:11px;color:var(--txt3);text-align:right;margin-top:4px}
+
+/* ── FILTROS ── */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.fb{padding:6px 13px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--txt3);font-size:12px;cursor:pointer;transition:all .15s}
+.fb.fa{background:var(--blue);color:#fff;border-color:transparent}
+.fb.fl{background:var(--gd);color:#fff;border-color:var(--green)}
+.fb.fr{background:var(--yd);color:#fff;border-color:var(--yellow)}
+.fb.fp{background:var(--rd);color:#fff;border-color:var(--red)}
+.sb{flex:1;min-width:180px;padding:7px 11px;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:13px;outline:none}
+.sb:focus{border-color:var(--blue)}
+
+/* ── DETALLE ── */
+.dp{background:var(--s1);border:1px solid var(--border2);border-radius:var(--r);padding:16px;margin-bottom:14px;display:none}
+.dp.show{display:block}
+.dp-h{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.dp-badge{width:46px;height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;flex-shrink:0}
+.dp-i{flex:1}
+.dp-name{font-size:16px;font-weight:600}
+.dp-c{font-size:13px;color:var(--txt2)}
+.dp-ts{font-size:11px;color:var(--txt3);margin-top:2px}
+.dp-btns{display:flex;gap:7px;flex-wrap:wrap}
+.ba{padding:8px 14px;border-radius:7px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s}
+.ba:hover{opacity:.82}
+.ba.g{background:var(--gd);color:#fff}
+.ba.r{background:var(--rd);color:#fff}
+.ba.y{background:var(--yd);color:#fff}
+.ba.gr{background:var(--s2);color:var(--txt2);border:1px solid var(--border)}
+.ba.cl{background:transparent;border:none;color:var(--txt3);font-size:18px;cursor:pointer;align-self:flex-start}
+
+/* ── GRID NÚMEROS ── */
+.ng{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:7px;margin-bottom:16px}
+.nc{background:var(--s1);border:1px solid var(--border);border-radius:8px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:transform .1s,border-color .15s;position:relative;outline:none}
+.nc:hover{transform:scale(1.07);border-color:var(--border2)}
+.nc .n{font-size:15px;font-weight:600;line-height:1}
+.nc .t{font-size:8px;text-transform:uppercase;margin-top:3px;letter-spacing:.03em}
+.nc.libre{border-color:var(--gd);background:var(--gbg)}.nc.libre .n{color:var(--green)}.nc.libre .t{color:var(--gd)}
+.nc.reservado{border-color:var(--yd);background:var(--ybg)}.nc.reservado .n{color:var(--yellow)}.nc.reservado .t{color:var(--yd)}
+.nc.pagado{border-color:var(--rd);background:var(--rbg)}.nc.pagado .n{color:var(--red)}.nc.pagado .t{color:var(--rd)}
+.nc.reservado::after{content:"";position:absolute;top:4px;right:4px;width:5px;height:5px;border-radius:50%;background:var(--yellow);animation:pls 1.4s infinite}
+
+/* ── LISTA EN PROCESO ── */
+.st{font-size:12px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.rl{display:flex;flex-direction:column;gap:5px}
+.ri{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;display:flex;align-items:center;gap:10px}
+.rn{background:var(--ybg);color:var(--yellow);border:1px solid var(--yd);border-radius:6px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.ri-i{flex:1}
+.ri-name{font-size:14px;font-weight:500}
+.ri-c{font-size:12px;color:var(--txt2)}
+.ri-ts{font-size:11px;color:var(--txt3)}
+.rb{padding:5px 10px;border-radius:5px;border:none;font-size:11px;font-weight:600;cursor:pointer;transition:opacity .15s}
+.rb:hover{opacity:.8}
+.rb.ok{background:var(--gd);color:#fff}
+.rb.dl{background:transparent;border:1px solid var(--border);color:var(--txt3)}
+.rb.dl:hover{border-color:var(--red);color:var(--red)}
+.empty{text-align:center;padding:20px;color:var(--txt3);font-size:13px}
+.ebar{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.bex{padding:8px 15px;border-radius:8px;border:1px solid var(--border);background:var(--s2);color:var(--txt2);font-size:13px;cursor:pointer}
+.bex:hover{border-color:var(--blue);color:var(--blue)}
+
+/* ════════════════════════════════════════════════
+   EDITOR VISUAL — SIN CÓDIGO
+════════════════════════════════════════════════ */
+.editor-title{font-size:16px;font-weight:600;margin-bottom:4px}
+.editor-sub{font-size:13px;color:var(--txt2);margin-bottom:18px;line-height:1.5}
+
+/* Sección dentro del editor */
+.esec{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.esec-title{font-size:12px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.esec-title span{font-size:16px}
+
+/* Campo de formulario del editor */
+.ef{margin-bottom:12px}
+.ef:last-child{margin-bottom:0}
+.ef label{display:block;font-size:12px;color:var(--txt3);font-weight:500;margin-bottom:5px}
+.ef input,.ef textarea,.ef select{
+  width:100%;padding:10px 13px;
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:8px;color:var(--txt);font-size:14px;
+  outline:none;transition:border .2s;resize:vertical;
+}
+.ef input:focus,.ef textarea:focus,.ef select:focus{border-color:var(--purple)}
+.ef .hint{font-size:11px;color:var(--txt3);margin-top:4px}
+
+/* Grid 2 columnas */
+.ef-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.ef-grid{grid-template-columns:1fr}}
+
+/* Toggle switch */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--border)}
+.toggle-row:last-child{border:none}
+.toggle-lbl{font-size:14px;color:var(--txt)}
+.toggle-desc{font-size:12px;color:var(--txt3);margin-top:2px}
+.toggle{position:relative;width:46px;height:26px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--border2);border-radius:13px;cursor:pointer;transition:.3s}
+.toggle-slider::before{content:"";position:absolute;width:20px;height:20px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+.toggle input:checked + .toggle-slider{background:var(--gd)}
+.toggle input:checked + .toggle-slider::before{transform:translateX(20px)}
+
+/* Upload foto */
+.photo-upload{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.photo-preview{width:80px;height:60px;border-radius:8px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;background:var(--s3)}
+.photo-btns{display:flex;flex-direction:column;gap:6px;flex:1}
+.photo-url{width:100%;padding:8px 11px;background:var(--s1);border:1px solid var(--border);border-radius:7px;color:var(--txt);font-size:13px;outline:none}
+.photo-url:focus{border-color:var(--purple)}
+.photo-hint{font-size:11px;color:var(--txt3);margin-top:3px}
+
+/* Vista previa del encabezado */
+.preview-box{background:linear-gradient(160deg,#0d1b3e 0%,#1a237e 55%,#0d1b3e 100%);border-radius:var(--r);padding:16px;text-align:center;margin-bottom:14px;border:1px solid #1e2a6e}
+.prev-badge{display:inline-block;background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.4);color:#fde68a;font-size:11px;padding:3px 12px;border-radius:20px;margin-bottom:8px}
+.prev-h1{font-size:17px;font-weight:700;color:#fff;line-height:1.35;margin-bottom:3px}
+.prev-sub{font-size:12px;color:#93c5fd}
+.prev-chips{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.prev-chip{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:4px 10px;font-size:12px;color:#e0e7ff}
+.prev-chip b{color:#fff}
+.preview-label{font-size:10px;color:var(--txt3);text-align:center;margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em}
+
+/* Guardar btn */
+.btn-save-big{width:100%;padding:13px;background:linear-gradient(135deg,var(--pd),var(--purple));color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .15s;margin-top:6px;letter-spacing:.03em}
+.btn-save-big:hover{opacity:.88}
+.btn-save-big:disabled{opacity:.45;cursor:default}
+.save-note{font-size:12px;color:var(--txt3);text-align:center;margin-top:8px;line-height:1.5}
+
+/* Selector combo */
+.combo-selector{display:flex;gap:6px;margin-bottom:14px}
+.cs-btn{flex:1;padding:9px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--txt2);font-size:13px;cursor:pointer;text-align:center;transition:all .15s;font-weight:500}
+.cs-btn.act{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* ── TOASTS ── */
+.toasts{position:fixed;bottom:16px;right:16px;display:flex;flex-direction:column;gap:7px;z-index:999;max-width:300px}
+.toast{background:var(--s1);border:1px solid var(--border);border-radius:9px;padding:10px 14px;font-size:13px;animation:sIn .3s ease;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.toast.ok{border-left:3px solid var(--green);color:var(--green)}
+.toast.warn{border-left:3px solid var(--yellow);color:var(--yellow)}
+.toast.err{border-left:3px solid var(--red);color:var(--red)}
+.toast.inf{border-left:3px solid var(--blue);color:var(--blue)}
+@keyframes sIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+
+@media(max-width:480px){.ng{grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:5px}.nc .n{font-size:13px}.nc .t{display:none}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="lw" id="loginWrap">
+  <div class="lc">
+    <div class="llogo">
+      <div class="licon">🔐</div>
+      <h1>Panel Administrador</h1>
+      <p>Rifa STEM — Acceso exclusivo</p>
+    </div>
+    <div class="fg">
+      <label>Contraseña de acceso</label>
+      <input type="password" id="passInput" placeholder="Ingresa tu contraseña"
+        autocomplete="current-password" onkeydown="if(event.key==='Enter')login()">
+    </div>
+    <button class="btnp" id="btnLogin" onclick="login()">Entrar al panel</button>
+    <div class="lerr" id="lerr"></div>
+  </div>
+</div>
+
+<!-- PANEL -->
+<div id="panel">
+  <div class="topbar">
+    <div class="tb-l">
+      <span class="tb-h">🎟️ Admin — Rifa STEM</span>
+      <div class="cdot" id="cDot"></div>
+      <span class="ctxt" id="cTxt">Conectando...</span>
+    </div>
+    <button class="bout" onclick="logout()">Cerrar sesión</button>
+  </div>
+
+  <div class="tabs">
+    <div class="tab act" onclick="setTab('numeros',this)">📊 Números</div>
+    <div class="tab"     onclick="setTab('proceso',this)">⏳ En proceso</div>
+    <div class="tab"     onclick="setTab('editor',this)">✏️ Editar rifa</div>
+  </div>
+
+  <div class="main">
+    <div class="cbanner" id="cBanner">⚠️ Sin conexión a Firebase. Reconectando...</div>
+
+    <!-- ═══ TAB NÚMEROS ═══ -->
+    <div id="tNumeros">
+      <div class="sg">
+        <div class="sc g"><div class="n" id="aL">—</div><div class="l">Disponibles</div></div>
+        <div class="sc y"><div class="n" id="aR">—</div><div class="l">En proceso</div></div>
+        <div class="sc r"><div class="n" id="aP">—</div><div class="l">Vendidos</div></div>
+        <div class="sc b"><div class="n" id="aM">—</div><div class="l">Recaudado</div></div>
+      </div>
+      <div class="prog">
+        <div class="pt"><span>Progreso de ventas</span><span id="aPct" style="font-weight:600">0%</span></div>
+        <div class="pb"><div class="pf" id="aProg" style="width:0%"></div></div>
+        <div class="pm" id="aMeta">Cargando...</div>
+      </div>
+
+      <!-- Selector combo admin -->
+      <div class="combo-selector" id="adminComboSel" style="display:none">
+        <button class="cs-btn act" onclick="setAdminCombo(1,this)">Combo 1</button>
+        <button class="cs-btn"     onclick="setAdminCombo(2,this)">Combo 2</button>
+      </div>
+
+      <div class="dp" id="detPanel"></div>
+
+      <div class="filters">
+        <button class="fb fa" onclick="setF('all',this,'fa')">Todos</button>
+        <button class="fb"    onclick="setF('libre',this,'fl')">Libres</button>
+        <button class="fb"    onclick="setF('reservado',this,'fr')">En proceso</button>
+        <button class="fb"    onclick="setF('pagado',this,'fp')">Vendidos</button>
+        <input class="sb" id="sbx" type="text"
+          placeholder="Buscar número o nombre..." oninput="renderGrid()">
+      </div>
+      <div class="ng" id="aGrid"></div>
+      <div class="ebar">
+        <button class="bex" onclick="exportCSV('todo')">⬇ Exportar todo</button>
+        <button class="bex" onclick="exportCSV('reservado')">⬇ En proceso</button>
+        <button class="bex" onclick="exportCSV('pagado')">⬇ Vendidos</button>
+      </div>
+    </div>
+
+    <!-- ═══ TAB EN PROCESO ═══ -->
+    <div id="tProceso" style="display:none">
+      <div class="combo-selector" id="procComboSel" style="display:none">
+        <button class="cs-btn act" onclick="setProcCombo(1,this)">Combo 1</button>
+        <button class="cs-btn"     onclick="setProcCombo(2,this)">Combo 2</button>
+      </div>
+      <div class="st">Números en proceso de pago (más antiguos primero)</div>
+      <div class="rl" id="resList"></div>
+    </div>
+
+    <!-- ═══ TAB EDITOR VISUAL ═══ -->
+    <div id="tEditor" style="display:none">
+      <div class="editor-title">✏️ Editor de la rifa</div>
+      <div class="editor-sub">Edita todo el contenido del talonario público desde aquí. Sin tocar código. Los cambios se publican en tiempo real al guardar.</div>
+
+      <!-- VISTA PREVIA EN VIVO -->
+      <div class="preview-label">Vista previa del encabezado</div>
+      <div class="preview-box" id="prevBox">
+        <div class="prev-badge" id="prevBadge">🎟️ Rifa Oficial</div>
+        <div class="prev-h1" id="prevTitulo">Juega el 16 de mayo de 2026</div>
+        <div class="prev-sub" id="prevSub">Dos últimas cifras del número ganador</div>
+        <div class="prev-chips">
+          <div class="prev-chip">🥃 <b id="prevP1">Buchanan's</b></div>
+          <div class="prev-chip">🍹 <b id="prevP2">Ron Medellín</b></div>
+          <div class="prev-chip">💵 <b id="prevValor">$10.000</b></div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN 1: Encabezado -->
+      <div class="esec">
+        <div class="esec-title"><span>📝</span> Textos del encabezado</div>
+        <div class="ef">
+          <label>Badge (etiqueta superior)</label>
+          <input type="text" id="eBadge" placeholder="🎟️ Rifa Oficial — Apoyo STEM"
+            oninput="prevBadge.innerHTML=this.value">
+        </div>
+        <div class="ef-grid">
+          <div class="ef">
+            <label>Título principal</label>
+            <textarea id="eTitulo" rows="2" placeholder="Juega el 16 de mayo de 2026..."
+              oninput="prevTitulo.innerHTML=this.value.replace(/\n/g,'<br>')"></textarea>
+          </div>
+          <div class="ef">
+            <label>Subtítulo</label>
+            <input type="text" id="eSub" placeholder="Dos últimas cifras..."
+              oninput="prevSub.textContent=this.value">
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN 2: Premios y fecha -->
+      <div class="esec">
+        <div class="esec-title"><span>🏆</span> Premios y fecha</div>
+        <div class="ef-grid">
+          <div class="ef">
+            <label>Premio 1 (🥃)</label>
+            <input type="text" id="eP1" placeholder="Buchanan's DeLuxe 12Y"
+              oninput="prevP1.textContent=this.value">
+          </div>
+          <div class="ef">
+            <label>Premio 2 (🍹)</label>
+            <input type="text" id="eP2" placeholder="Ron Medellín Añejo"
+              oninput="prevP2.textContent=this.value">
+          </div>
+          <div class="ef">
+            <label>Valor por número</label>
+            <input type="text" id="eValor" placeholder="$10.000"
+              oninput="prevValor.textContent=this.value">
+          </div>
+          <div class="ef">
+            <label>Fecha del sorteo</label>
+            <input type="text" id="eFecha" placeholder="16 de mayo de 2026">
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN 3: Pago -->
+      <div class="esec">
+        <div class="esec-title"><span>📱</span> Datos de pago</div>
+        <div class="ef">
+          <label>Números Nequi / Daviplata</label>
+          <input type="text" id="eNequi" placeholder="320 887 1253 · 311 457 1322">
+          <div class="hint">Puedes poner uno o varios separados con ·</div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN 4: Causa / misión -->
+      <div class="esec">
+        <div class="esec-title"><span>🎓</span> Texto de causa / misión</div>
+        <div class="ef">
+          <label>Título de la causa</label>
+          <textarea id="eCausa" rows="2" placeholder="🎓 Apoya a nuestros niños en las Olimpiadas STEM..."></textarea>
+        </div>
+        <div class="ef">
+          <label>Descripción de la causa</label>
+          <textarea id="eCausaSub" rows="2" placeholder="Cada número que compres ayuda a..."></textarea>
+        </div>
+      </div>
+
+      <!-- SECCIÓN 5: Fotos -->
+      <div class="esec">
+        <div class="esec-title"><span>📸</span> Fotos del talonario</div>
+        <div class="ef">
+          <label>Foto izquierda — Los niños / protagonistas</label>
+          <div class="photo-upload">
+            <img id="prev-foto2" class="photo-preview" src="" alt="foto izquierda">
+            <div class="photo-btns">
+              <input type="text" class="photo-url" id="eFoto2"
+                placeholder="https://... (URL de la imagen)"
+                oninput="updateFotoPreview('prev-foto2',this.value)">
+              <div class="photo-hint">Pega una URL de imagen (Imgur, Google Drive público, etc.)<br>
+              O deja vacío para usar la foto original de los niños.</div>
+            </div>
+          </div>
+        </div>
+        <div class="ef" style="margin-top:14px">
+          <label>Foto derecha — Los premios</label>
+          <div class="photo-upload">
+            <img id="prev-foto1" class="photo-preview" src="" alt="foto derecha">
+            <div class="photo-btns">
+              <input type="text" class="photo-url" id="eFoto1"
+                placeholder="https://... (URL de la imagen)"
+                oninput="updateFotoPreview('prev-foto1',this.value)">
+              <div class="photo-hint">Pega la URL de la foto de los premios.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN 6: Dual combo -->
+      <div class="esec">
+        <div class="esec-title"><span>🎯</span> Rifar dos combos en dos fechas</div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-lbl">Activar doble rifa</div>
+            <div class="toggle-desc">Agrega una segunda pestaña con otra rifa independiente</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="eDual" onchange="toggleDualFields()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div id="dualFields" style="display:none;margin-top:14px">
+          <div class="ef-grid">
+            <div class="ef">
+              <label>Nombre pestaña Combo 1</label>
+              <input type="text" id="eLabelC1" placeholder="Combo 1 — Mayo 2026">
+            </div>
+            <div class="ef">
+              <label>Nombre pestaña Combo 2</label>
+              <input type="text" id="eLabelC2" placeholder="Combo 2 — Junio 2026">
+            </div>
+            <div class="ef">
+              <label>Premio extra Combo 2 (🥃)</label>
+              <input type="text" id="eP1c2" placeholder="Johnie Walker Black">
+            </div>
+            <div class="ef">
+              <label>Premio extra Combo 2 (🍹)</label>
+              <input type="text" id="eP2c2" placeholder="Aguardiente Cristal">
+            </div>
+            <div class="ef">
+              <label>Fecha sorteo Combo 2</label>
+              <input type="text" id="eFecha2" placeholder="20 de junio de 2026">
+            </div>
+            <div class="ef">
+              <label>Valor Combo 2</label>
+              <input type="text" id="eValor2" placeholder="$10.000">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTÓN GUARDAR -->
+      <button class="btn-save-big" id="btnSave" onclick="guardarConfig()">
+        💾 Guardar y publicar todos los cambios
+      </button>
+      <div class="save-note">
+        Los cambios se reflejan en el talonario público al instante.<br>
+        Este mismo panel sirve para cualquier rifa futura — solo edita y guarda.
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /panel -->
+
+<div class="toasts" id="toasts"></div>
+
+<script type="module">
+import { initializeApp } from
+  "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, doc,
+         onSnapshot, setDoc, deleteDoc, getDoc }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ── CONFIG ──────────────────────────────────────────────────
+const ADMIN_PASS     = "Aurea123";
+const PRECIO_DEFAULT = 10000;
+const UNA_HORA       = 60 * 60 * 1000;
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyA4auC2caQVgCXvRnCMabDr2k8WVvCTzBw",
+  authDomain:        "rifas-online-d0bae.firebaseapp.com",
+  projectId:         "rifas-online-d0bae",
+  storageBucket:     "rifas-online-d0bae.firebasestorage.app",
+  messagingSenderId: "905341315838",
+  appId:             "1:905341315838:web:6b2d6321af6797643f93af"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+// ── ESTADO ──────────────────────────────────────────────────
+let rifaData  = {};
+let rifaData2 = {};
+let configData= {};
+let filtro    = "all";
+let adminCombo= 1;
+let procCombo = 1;
+let unsub=null, unsub2=null, unsubCfg=null;
+
+// ── LOGIN ────────────────────────────────────────────────────
+window.login = () => {
+  const pass = document.getElementById("passInput").value.trim();
+  const err  = document.getElementById("lerr");
+  err.textContent = "";
+  if (!pass) { err.textContent = "Ingresa la contraseña"; return; }
+  if (pass !== ADMIN_PASS) {
+    err.textContent = "❌ Contraseña incorrecta";
+    document.getElementById("passInput").value = "";
+    return;
+  }
+  const btn = document.getElementById("btnLogin");
+  btn.disabled = true; btn.textContent = "Conectando...";
+  document.getElementById("loginWrap").style.display = "none";
+  document.getElementById("panel").style.display     = "block";
+  iniciar();
+};
+
+window.logout = () => {
+  [unsub, unsub2, unsubCfg].forEach(u => u && u());
+  document.getElementById("panel").style.display     = "none";
+  document.getElementById("loginWrap").style.display = "flex";
+  const btn = document.getElementById("btnLogin");
+  btn.disabled = false; btn.textContent = "Entrar al panel";
+  document.getElementById("passInput").value = "";
+  rifaData={}; rifaData2={}; configData={};
+};
+
+// ── INIT ─────────────────────────────────────────────────────
+function iniciar() {
+  unsub = onSnapshot(collection(db,"rifa"),
+    snap => {
+      rifaData={};
+      snap.forEach(d=>{rifaData[d.id]=d.data();});
+      if(adminCombo===1) { actualizarStats(); renderGrid(); }
+      if(procCombo===1)  renderProceso();
+      setConn(true);
+    },
+    ()=>setConn(false)
+  );
+  unsub2 = onSnapshot(collection(db,"rifa2"),
+    snap => {
+      rifaData2={};
+      snap.forEach(d=>{rifaData2[d.id]=d.data();});
+      if(adminCombo===2) { actualizarStats(); renderGrid(); }
+      if(procCombo===2)  renderProceso();
+    }
+  );
+  unsubCfg = onSnapshot(doc(db,"config","rifa"), snap => {
+    configData = snap.exists() ? snap.data() : {};
+    cargarFormEditor(configData);
+    // Mostrar selector combo si dual está activo
+    const hay = configData.dualCombo;
+    ["adminComboSel","procComboSel"].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.style.display = hay?"flex":"none";
+    });
+  });
+}
+
+// ── ESTADO NÚMERO ─────────────────────────────────────────────
+function getEstado(k, datos) {
+  const d=datos[k];
+  if(!d) return "libre";
+  if(d.estado==="pagado") return "pagado";
+  if(d.estado==="reservado") {
+    if(Date.now()-d.tiempo>UNA_HORA) return "libre";
+    return "reservado";
+  }
+  return "libre";
+}
+
+function getDatos() { return adminCombo===1 ? rifaData : rifaData2; }
+function getCol()   { return adminCombo===1 ? "rifa"   : "rifa2";   }
+
+// ── STATS ────────────────────────────────────────────────────
+function actualizarStats() {
+  const datos=getDatos();
+  let l=0,r=0,p=0;
+  for(let i=0;i<100;i++){
+    const e=getEstado(String(i).padStart(2,"0"),datos);
+    if(e==="libre")l++;else if(e==="reservado")r++;else p++;
+  }
+  const v=(configData.valor||"$10.000").replace(/\D/g,"");
+  const precio=parseInt(v)||PRECIO_DEFAULT;
+  const pct=Math.round((p/100)*100);
+  document.getElementById("aL").textContent=l;
+  document.getElementById("aR").textContent=r;
+  document.getElementById("aP").textContent=p;
+  document.getElementById("aM").textContent="$"+(p*precio).toLocaleString("es-CO");
+  document.getElementById("aPct").textContent=pct+"%";
+  document.getElementById("aProg").style.width=pct+"%";
+  document.getElementById("aMeta").textContent=
+    `${p} vendidos · ${r} en proceso · ${l} disponibles`;
+}
+
+// ── RENDER GRID ───────────────────────────────────────────────
+window.renderGrid = function() {
+  const datos=getDatos();
+  const grid=document.getElementById("aGrid");
+  const search=document.getElementById("sbx").value.toLowerCase().trim();
+  grid.innerHTML="";
+  const ahora=Date.now();
+  for(let i=0;i<100;i++){
+    const k=String(i).padStart(2,"0");
+    const st=getEstado(k,datos);
+    const d=datos[k];
+    const nb=d?.nombre?.toLowerCase()||"";
+    if(filtro!=="all"&&filtro!==st) continue;
+    if(search&&!k.includes(search)&&!nb.includes(search)) continue;
+    let etiq="libre";
+    if(st==="reservado"){const ms=UNA_HORA-(ahora-d.tiempo);etiq=fmtMin(ms);}
+    else if(st==="pagado") etiq="vendido";
+    const card=document.createElement("button");
+    card.className=`nc ${st}`;
+    card.innerHTML=`<span class="n">${k}</span><span class="t">${etiq}</span>`;
+    card.addEventListener("click",()=>abrirDetalle(k));
+    grid.appendChild(card);
+  }
+  if(!grid.children.length)
+    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--txt3)">Sin resultados</div>';
+};
+
+// ── DETALLE ───────────────────────────────────────────────────
+async function abrirDetalle(k){
+  const panel=document.getElementById("detPanel");
+  const datos=getDatos();
+  const d=datos[k];
+  const st=getEstado(k,datos);
+  const cmap={
+    libre:    ["var(--gbg)","var(--green)","var(--gd)"],
+    reservado:["var(--ybg)","var(--yellow)","var(--yd)"],
+    pagado:   ["var(--rbg)","var(--red)","var(--rd)"]
+  };
+  const [bg,cl,brd]=cmap[st];
+  const ts=d?.tiempo?new Date(d.tiempo).toLocaleString("es-CO",{dateStyle:"long",timeStyle:"short"}):"";
+  let btns="";
+  if(st==="libre")
+    btns=`<button class="ba y" onclick="adminReservar('${k}')">Marcar en proceso</button>`;
+  if(st==="reservado")
+    btns=`<button class="ba g" onclick="adminPagar('${k}')">✓ Confirmar pago</button>
+          <button class="ba r" onclick="adminLiberar('${k}')">Liberar</button>`;
+  if(st==="pagado")
+    btns=`<button class="ba gr" onclick="adminLiberar('${k}')">♻ Reversar</button>`;
+  panel.innerHTML=`
+    <div class="dp-h">
+      <div class="dp-badge" style="background:${bg};color:${cl};border:2px solid ${brd}">${k}</div>
+      <div class="dp-i">
+        <div class="dp-name">${d?.nombre||(st==="libre"?"Número libre":"Sin nombre")}</div>
+        <div class="dp-c">${d?.whatsapp?"📱 "+d.whatsapp:""}</div>
+        <div class="dp-ts">${ts}</div>
+      </div>
+      <button class="ba cl" onclick="cerrarDetalle()">✕</button>
+    </div>
+    <div class="dp-btns">${btns}</div>
+  `;
+  panel.classList.add("show");
+  panel.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+window.cerrarDetalle=()=>{document.getElementById("detPanel").classList.remove("show");};
+
+// ── ACCIONES ─────────────────────────────────────────────────
+window.adminPagar = async k=>{
+  const d=getDatos()[k];
+  try{
+    await setDoc(doc(db,getCol(),k),{estado:"pagado",nombre:d?.nombre||"",whatsapp:d?.whatsapp||"",tiempo:Date.now()});
+    toast(`N° ${k} pagado ✓`,"ok"); cerrarDetalle();
+  }catch(_){toast("Error al actualizar","err");}
+};
+window.adminLiberar = async k=>{
+  try{
+    await deleteDoc(doc(db,getCol(),k));
+    toast(`N° ${k} liberado`,"warn"); cerrarDetalle();
+  }catch(_){toast("Error al liberar","err");}
+};
+window.adminReservar = async k=>{
+  const nombre=prompt(`Reservar N° ${k}\nNombre:`);
+  if(!nombre) return;
+  const wapp=prompt("WhatsApp:");
+  if(!wapp) return;
+  try{
+    await setDoc(doc(db,getCol(),k),{estado:"reservado",nombre:nombre.trim(),whatsapp:wapp.trim(),tiempo:Date.now()});
+    toast(`N° ${k} reservado para ${nombre}`,"ok"); cerrarDetalle();
+  }catch(_){toast("Error","err");}
+};
+
+// ── EN PROCESO ────────────────────────────────────────────────
+function renderProceso(){
+  const datos=procCombo===1?rifaData:rifaData2;
+  const col  =procCombo===1?"rifa":"rifa2";
+  const list =document.getElementById("resList");
+  const ahora=Date.now();
+  const items=[];
+  for(let i=0;i<100;i++){
+    const k=String(i).padStart(2,"0");
+    const d=datos[k];
+    if(d&&d.estado==="reservado"&&ahora-d.tiempo<=UNA_HORA) items.push({k,...d});
+  }
+  items.sort((a,b)=>(a.tiempo||0)-(b.tiempo||0));
+  if(!items.length){list.innerHTML='<div class="empty">Sin números en proceso ✓</div>';return;}
+  list.innerHTML="";
+  items.forEach(({k,nombre,whatsapp,tiempo})=>{
+    const ts=tiempo?new Date(tiempo).toLocaleString("es-CO",{dateStyle:"short",timeStyle:"short"}):"—";
+    const rest=UNA_HORA-(ahora-tiempo);
+    const el=document.createElement("div");
+    el.className="ri";
+    el.innerHTML=`
+      <div class="rn">${k}</div>
+      <div class="ri-i">
+        <div class="ri-name">${nombre||"Sin nombre"}</div>
+        <div class="ri-c">📱 ${whatsapp||"—"}</div>
+        <div class="ri-ts">${ts} · Expira en ${fmtMin(rest)}</div>
+      </div>
+      <div style="display:flex;gap:5px">
+        <button class="rb ok">✓ Pagado</button>
+        <button class="rb dl">Liberar</button>
+      </div>
+    `;
+    el.querySelector(".rb.ok").addEventListener("click",async()=>{
+      const d=datos[k];
+      await setDoc(doc(db,col,k),{estado:"pagado",nombre:d?.nombre||"",whatsapp:d?.whatsapp||"",tiempo:Date.now()});
+      toast(`N° ${k} pagado ✓`,"ok");
+    });
+    el.querySelector(".rb.dl").addEventListener("click",async()=>{
+      await deleteDoc(doc(db,col,k));
+      toast(`N° ${k} liberado`,"warn");
+    });
+    list.appendChild(el);
+  });
+}
+
+// ── COMBO SELECTORS ───────────────────────────────────────────
+window.setAdminCombo=(n,btn)=>{
+  adminCombo=n;
+  document.querySelectorAll("#adminComboSel .cs-btn").forEach(b=>b.classList.remove("act"));
+  btn.classList.add("act");
+  renderGrid(); actualizarStats();
+};
+window.setProcCombo=(n,btn)=>{
+  procCombo=n;
+  document.querySelectorAll("#procComboSel .cs-btn").forEach(b=>b.classList.remove("act"));
+  btn.classList.add("act");
+  renderProceso();
+};
+
+// ── TABS ──────────────────────────────────────────────────────
+window.setTab=(tab,el)=>{
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("act"));
+  el.classList.add("act");
+  document.getElementById("tNumeros").style.display=tab==="numeros"?"block":"none";
+  document.getElementById("tProceso").style.display=tab==="proceso"?"block":"none";
+  document.getElementById("tEditor").style.display =tab==="editor" ?"block":"none";
+};
+
+// ── FILTROS ───────────────────────────────────────────────────
+window.setF=(f,btn,cls)=>{
+  filtro=f;
+  document.querySelectorAll(".fb").forEach(b=>{b.className="fb";if(b===btn)b.classList.add(cls);});
+  renderGrid();
+};
+
+// ── EDITOR VISUAL ─────────────────────────────────────────────
+function cargarFormEditor(c){
+  const s=(id,v)=>{const e=document.getElementById(id);if(e&&v!==undefined)e.value=v;};
+  s("eBadge",    c.badge);
+  s("eTitulo",   c.titulo);
+  s("eSub",      c.sub);
+  s("eP1",       c.p1||c.premio1);
+  s("eP2",       c.p2||c.premio2);
+  s("eValor",    c.valor);
+  s("eFecha",    c.fecha);
+  s("eNequi",    c.nequi);
+  s("eCausa",    c.causa);
+  s("eCausaSub", c.causaSub);
+  s("eFoto1",    c.foto1);
+  s("eFoto2",    c.foto2);
+  s("eLabelC1",  c.labelC1);
+  s("eLabelC2",  c.labelC2);
+  s("eP1c2",     c.p1c2);
+  s("eP2c2",     c.p2c2);
+  s("eFecha2",   c.fecha2);
+  s("eValor2",   c.valor2);
+  const dual=document.getElementById("eDual");
+  if(dual) dual.checked=!!c.dualCombo;
+  toggleDualFields();
+  // Actualizar preview
+  if(c.badge)  document.getElementById("prevBadge").textContent  =c.badge;
+  if(c.titulo) document.getElementById("prevTitulo").innerHTML   =c.titulo;
+  if(c.sub)    document.getElementById("prevSub").textContent    =c.sub;
+  if(c.p1||c.premio1) document.getElementById("prevP1").textContent=(c.p1||c.premio1);
+  if(c.p2||c.premio2) document.getElementById("prevP2").textContent=(c.p2||c.premio2);
+  if(c.valor)  document.getElementById("prevValor").textContent  =c.valor;
+  if(c.foto1) updateFotoPreview("prev-foto1",c.foto1);
+  if(c.foto2) updateFotoPreview("prev-foto2",c.foto2);
+}
+
+window.toggleDualFields=()=>{
+  const on=document.getElementById("eDual")?.checked;
+  const df=document.getElementById("dualFields");
+  if(df) df.style.display=on?"block":"none";
+};
+
+window.updateFotoPreview=(imgId,url)=>{
+  const img=document.getElementById(imgId);
+  if(img && url) { img.src=url; img.style.opacity="1"; }
+};
+
+window.guardarConfig=async()=>{
+  const g=id=>document.getElementById(id)?.value.trim()||"";
+  const dual=document.getElementById("eDual")?.checked||false;
+  const cfg={
+    badge:    g("eBadge"),
+    titulo:   g("eTitulo"),
+    sub:      g("eSub"),
+    p1:       g("eP1"),   premio1:g("eP1"),
+    p2:       g("eP2"),   premio2:g("eP2"),
+    valor:    g("eValor"),
+    fecha:    g("eFecha"),
+    nequi:    g("eNequi"),
+    causa:    g("eCausa"),
+    causaSub: g("eCausaSub"),
+    foto1:    g("eFoto1"),
+    foto2:    g("eFoto2"),
+    dualCombo:dual,
+    labelC1:  g("eLabelC1"),
+    labelC2:  g("eLabelC2"),
+    p1c2:     g("eP1c2"),
+    p2c2:     g("eP2c2"),
+    fecha2:   g("eFecha2"),
+    valor2:   g("eValor2"),
+    precio:   g("eValor"),
+    updatedAt:Date.now()
+  };
+  const btn=document.getElementById("btnSave");
+  btn.disabled=true; btn.textContent="Guardando...";
+  try{
+    await setDoc(doc(db,"config","rifa"),cfg);
+    toast("✓ Cambios publicados en tiempo real","ok");
+  }catch(e){
+    console.error(e);
+    toast("Error: revisa los permisos de Firestore","err");
+  }
+  btn.disabled=false; btn.textContent="💾 Guardar y publicar todos los cambios";
+};
+
+// ── EXPORT CSV ────────────────────────────────────────────────
+window.exportCSV=(tipo)=>{
+  const datos=getDatos();
+  const rows=[["Numero","Estado","Nombre","WhatsApp","Fecha","Combo"]];
+  for(let i=0;i<100;i++){
+    const k=String(i).padStart(2,"0");
+    const d=datos[k]; const st=getEstado(k,datos);
+    if(tipo!=="todo"&&st!==tipo) continue;
+    const ts=d?.tiempo?new Date(d.tiempo).toLocaleString("es-CO"):"";
+    rows.push([k,st,d?.nombre||"",d?.whatsapp||"",ts,`Combo ${adminCombo}`]);
+  }
+  const csv=rows.map(r=>r.map(v=>`"${v}"`).join(",")).join("\n");
+  const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url; a.download=`rifa_combo${adminCombo}_${tipo}_${Date.now()}.csv`; a.click();
+  URL.revokeObjectURL(url);
+  toast("CSV exportado","inf");
+};
+
+// ── UTILS ─────────────────────────────────────────────────────
+function fmtMin(ms){
+  if(ms<=0) return "libre";
+  const m=Math.floor(ms/60000);
+  return m>0?`${m}m`:`${Math.floor(ms/1000)}s`;
+}
+function setConn(ok){
+  document.getElementById("cDot").style.background=ok?"var(--green)":"var(--red)";
+  document.getElementById("cDot").style.boxShadow=ok?"0 0 6px var(--green)":"0 0 6px var(--red)";
+  document.getElementById("cTxt").style.color=ok?"var(--green)":"var(--red)";
+  document.getElementById("cTxt").textContent=ok?"Tiempo real activo":"Sin conexión";
+  document.getElementById("cBanner").classList.toggle("show",!ok);
+}
+function toast(msg,tipo="ok",dur=2800){
+  const cont=document.getElementById("toasts");
+  const el=document.createElement("div");
+  el.className=`toast ${tipo}`; el.textContent=msg;
+  cont.appendChild(el);
+  setTimeout(()=>{el.style.opacity="0";el.style.transition="opacity .35s";setTimeout(()=>el.remove(),360);},dur);
+}
+window.toast=toast;
+setInterval(()=>{renderGrid();renderProceso();actualizarStats();},30000);
+</script>
+</body>
+</html>
