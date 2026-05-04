@@ -282,8 +282,12 @@ body{font-family:"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(
         <button class="bex" onclick="exportCSV('todo')">⬇ Exportar todo</button>
         <button class="bex" onclick="exportCSV('reservado')">⬇ En proceso</button>
         <button class="bex" onclick="exportCSV('pagado')">⬇ Vendidos</button>
-      </div>
-    </div>
+     <div class="ebar">
+  <button class="bex" onclick="exportCSV('todo')">⬇ Exportar todo</button>
+  <button class="bex" onclick="exportCSV('reservado')">⬇ En proceso</button>
+  <button class="bex" onclick="exportCSV('pagado')">⬇ Vendidos</button>
+  <button class="bex" onclick="descargarTalonario()">📄 Descargar talonario completo</button>
+</div>
 
     <!-- ═══ TAB EN PROCESO ═══ -->
     <div id="tProceso" style="display:none">
@@ -890,6 +894,55 @@ function toast(msg,tipo="ok",dur=2800){
   cont.appendChild(el);
   setTimeout(()=>{el.style.opacity="0";el.style.transition="opacity .35s";setTimeout(()=>el.remove(),360);},dur);
 }
+// ── DESCARGAR TALONARIO COMPLETO ──────────────────────────
+window.descargarTalonario = function() {
+  const datos = adminCombo === 1 ? rifaData : rifaData2;
+  const ahora = Date.now();
+  const filas = [
+    ["Número","Estado","Nombre","WhatsApp","Fecha reserva","Minutos restantes"]
+  ];
+
+  for (let i = 0; i < 100; i++) {
+    const k  = String(i).padStart(2,"0");
+    const d  = datos[k];
+    const st = getEstado(k, datos);
+    const etiq = st === "libre" ? "Disponible"
+               : st === "reservado" ? "En proceso"
+               : "Vendido";
+
+    const ts   = d?.tiempo
+      ? new Date(d.tiempo).toLocaleString("es-CO") : "";
+    const rest = (st === "reservado")
+      ? Math.max(0, Math.floor((UNA_HORA-(ahora-d.tiempo))/60000)) + " min" : "";
+
+    filas.push([k, etiq, d?.nombre||"", d?.whatsapp||"", ts, rest]);
+  }
+
+  // Resumen final
+  const libres   = filas.slice(1).filter(r=>r[1]==="Disponible").length;
+  const proceso  = filas.slice(1).filter(r=>r[1]==="En proceso").length;
+  const vendidos = filas.slice(1).filter(r=>r[1]==="Vendido").length;
+  const precio   = parseInt((configData.valor||"$10.000").replace(/\D/g,""))||10000;
+
+  filas.push([]);
+  filas.push(["═══ RESUMEN ═══","","","","",""]);
+  filas.push(["Disponibles",  libres,   "","","",""]);
+  filas.push(["En proceso",   proceso,  "","","",""]);
+  filas.push(["Vendidos",     vendidos, "","","",""]);
+  filas.push(["Recaudado",    "$"+(vendidos*precio).toLocaleString("es-CO"),"","","",""]);
+  filas.push(["Combo",        `Combo ${adminCombo}`,"","","",""]);
+  filas.push(["Descargado el",new Date().toLocaleString("es-CO"),"","","",""]);
+
+  const csv  = filas.map(r=>r.map(v=>`"${v}"`).join(",")).join("\n");
+  const blob = new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
+  a.download = `talonario_combo${adminCombo}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast("✓ Talonario descargado — ábrelo en Excel","ok",3000);
+};
 window.toast=toast;
 setInterval(()=>{renderGrid();renderProceso();actualizarStats();},30000);
 </script>
