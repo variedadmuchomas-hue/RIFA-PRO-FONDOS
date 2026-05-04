@@ -671,12 +671,40 @@ async function abrirDetalle(k){
 window.cerrarDetalle=()=>{document.getElementById("detPanel").classList.remove("show");};
 
 // ── ACCIONES ─────────────────────────────────────────────────
-window.adminPagar = async k=>{
-  const d=getDatos()[k];
-  try{
-    await setDoc(doc(db,getCol(),k),{estado:"pagado",nombre:d?.nombre||"",whatsapp:d?.whatsapp||"",tiempo:Date.now()});
-    toast(`N° ${k} pagado ✓`,"ok"); cerrarDetalle();
-  }catch(_){toast("Error al actualizar","err");}
+window.adminPagar = async k => {
+  const d = getDatos()[k];
+  const nombre   = d?.nombre   || "cliente";
+  const whatsapp = d?.whatsapp || "";
+  const combo_lbl = adminCombo === 1
+    ? (configData.fecha  || "la rifa")
+    : (configData.fecha2 || "la rifa 2");
+
+  try {
+    await setDoc(doc(db, getCol(), k), {
+      estado:   "pagado",
+      nombre:   d?.nombre   || "",
+      whatsapp: d?.whatsapp || "",
+      tiempo:   Date.now()
+    });
+    toast(`N° ${k} confirmado ✓`, "ok");
+    cerrarDetalle();
+
+    // ── Abrir WhatsApp con mensaje de confirmación al comprador ──
+    if (whatsapp && whatsapp.length >= 7) {
+      const num = whatsapp.replace(/\D/g, "");
+      const msg = encodeURIComponent(
+        `✅ *¡Pago confirmado, ${nombre}!*\n\n` +
+        `Tu número *${k}* quedó registrado para la rifa del ${combo_lbl}.\n\n` +
+        `🎟️ Mucha suerte y gracias por tu apoyo.\n` +
+        `📅 Recuerda seguir el resultado el día del sorteo.`
+      );
+      const url = `https://wa.me/57${num}?text=${msg}`;
+      // Pequeña pausa para que el admin vea el toast primero
+      setTimeout(() => window.open(url, "_blank"), 800);
+    }
+  } catch (_) {
+    toast("Error al actualizar", "err");
+  }
 };
 window.adminLiberar = async k=>{
   try{
