@@ -720,7 +720,11 @@ window.copiarCampo=(inputId,displayId)=>{
 
 // ── LICENCIAS ────────────────────────────────
 window.crearLicencia=async()=>{
-  const id    =document.getElementById("licId").value.trim();
+  let id = document.getElementById("licId").value.trim();
+
+if (!id) {
+  id = "rifa-" + Math.random().toString(36).substring(2,8);
+}
   const wa    =document.getElementById("licWa").value.trim();
   const dias  =parseInt(document.getElementById("licDias").value)||30;
   const nombre=document.getElementById("licNombre").value.trim();
