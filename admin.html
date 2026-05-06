@@ -726,7 +726,7 @@ if (!id) {
   id = "rifa-" + Math.random().toString(36).substring(2,8);
 }
   const wa    =document.getElementById("licWa").value.trim();
-  const dias  =parseInt(document.getElementById("licDias").value)||30;
+  const dias  =parseInt(document.getElementById("licDias").value)||35;
   const nombre=document.getElementById("licNombre").value.trim();
   if(!id||!wa){toast("Completa ID y WhatsApp","warn");return;}
   const vence = Date.now() + (dias * MS_DIA);
