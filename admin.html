@@ -379,29 +379,8 @@ body{font-family:"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(
         </button>
       </div>
 
-      <!-- Modal renovar con días personalizados -->
-      <div id="modalRenovar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;align-items:center;justify-content:center;padding:20px">
-        <div style="background:var(--s1);border:1px solid var(--border2);border-radius:16px;padding:26px;width:100%;max-width:360px">
-          <div style="font-size:17px;font-weight:700;margin-bottom:4px">⏱️ Extender tiempo de uso</div>
-          <div style="font-size:13px;color:var(--txt2);margin-bottom:16px" id="modalRenovarId"></div>
-          <div class="ef">
-            <label>Días a agregar</label>
-            <input type="number" id="modalDias" value="30" min="1" max="365"
-              style="background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--txt);padding:10px 13px;width:100%;font-size:16px;outline:none">
-            <div class="hint" style="margin-top:5px">Se suman desde hoy o desde la fecha actual de vencimiento (la mayor)</div>
-          </div>
-          <div style="display:flex;gap:8px;margin-top:18px">
-            <button onclick="cerrarModalRenovar()" style="flex:1;padding:11px;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--txt2);font-size:14px;cursor:pointer">Cancelar</button>
-            <button onclick="confirmarRenovar()" style="flex:2;padding:11px;background:var(--bd);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">✓ Extender licencia</button>
-          </div>
-        </div>
-      </div>
-
       <!-- Lista de licencias activas -->
-      <div class="st" style="display:flex;align-items:center;justify-content:space-between;margin-top:16px">
-        <span>Licencias registradas</span>
-        <button onclick="cargarLicencias()" style="padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--txt3);font-size:11px;cursor:pointer">🔄 Actualizar</button>
-      </div>
+      <div class="st">Licencias registradas</div>
       <div id="licList"><div class="empty">Cargando licencias...</div></div>
     </div>
 
@@ -418,11 +397,10 @@ import { getFirestore, collection, doc,
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const ADMIN_PASS     = "Aurea123";
-const PRECIO_DEFAULT = 20000;
+const PRECIO_DEFAULT = 10000;
 const UNA_HORA       = 60 * 60 * 1000;
 const MS_DIA         = 24 * 60 * 60 * 1000;
 
-const LICENCIA_ID = "rifa-stem-001";
 const firebaseConfig = {
   apiKey:            "AIzaSyA4auC2caQVgCXvRnCMabDr2k8WVvCTzBw",
   authDomain:        "rifas-online-d0bae.firebaseapp.com",
@@ -760,92 +738,60 @@ window.crearLicencia=async()=>{
   }catch(e){toast("Error al crear licencia","err");}
 };
 
-// Variable para el modal de renovar
-let _renovarId = null;
-
-window.abrirModalRenovar = (id, diasActuales) => {
-  _renovarId = id;
-  document.getElementById("modalRenovarId").textContent = `Talonario: ${id}`;
-  document.getElementById("modalDias").value = diasActuales || 30;
-  const modal = document.getElementById("modalRenovar");
-  modal.style.display = "flex";
-};
-
-window.cerrarModalRenovar = () => {
-  document.getElementById("modalRenovar").style.display = "none";
-  _renovarId = null;
-};
-
-window.confirmarRenovar = async () => {
-  if (!_renovarId) return;
-  const dias = parseInt(document.getElementById("modalDias").value) || 30;
-  try {
-    const licRef = doc(db, "licencias", _renovarId);
-    const s = await getDoc(licRef);
-    if (!s.exists()) { toast("Licencia no encontrada", "err"); return; }
-    const d2 = s.data();
-    const base = Math.max(Date.now(), d2.vence || Date.now());
-    await setDoc(licRef, { ...d2, activa: true, vence: base + (dias * MS_DIA) });
-    cerrarModalRenovar();
-    cargarLicencias();
-    toast(`✓ Extendida +${dias} días`, "ok");
-  } catch(e) { toast("Error al renovar", "err"); }
-};
-
 async function cargarLicencias(){
   const list=document.getElementById("licList");
   try{
     const snap=await getDocs(collection(db,"licencias"));
-    if(snap.empty){list.innerHTML='<div class="empty">Sin licencias creadas. Crea una arriba ☝️</div>';return;}
+    if(snap.empty){list.innerHTML='<div class="empty">Sin licencias creadas</div>';return;}
     list.innerHTML="";
     const ahora=Date.now();
     snap.forEach(d=>{
       const lic=d.data();
       const vencido=lic.vence && ahora>lic.vence;
       const restante=lic.vence ? Math.max(0,Math.ceil((lic.vence-ahora)/MS_DIA)) : "∞";
-      const venceStr=lic.vence ? new Date(lic.vence).toLocaleDateString("es-CO",{day:"2-digit",month:"short",year:"numeric"}) : "Sin límite";
-      const estado=!lic.activa?"🔴 Bloqueada":vencido?"🟡 Vencida":`🟢 Activa · ${restante} días restantes`;
-      const colorBorde=!lic.activa?"var(--rd)":vencido?"var(--yd)":"var(--gd)";
+      const estado=!lic.activa?"Suspendida":vencido?"Vencida":`Activa · ${restante} días restantes`;
+      const color=!lic.activa||vencido?"var(--red)":"var(--green)";
+      const icon=!lic.activa||vencido?"🔴":"🟢";
       const el=document.createElement("div");
       el.className="lic-card";
-      el.style.borderColor=colorBorde;
-      el.style.borderWidth="2px";
       el.innerHTML=`
-        <div class="lic-badge" style="background:var(--s3);font-size:22px">${!lic.activa?"🔒":vencido?"⚠️":"✅"}</div>
+        <div class="lic-badge" style="background:var(--s3)">${icon}</div>
         <div class="lic-info">
           <div class="lic-id">${d.id}</div>
-          <div class="lic-meta">${lic.nombre||"Sin nombre"} · 📱 ${lic.waAdmin||"—"}</div>
-          <div class="lic-meta" style="margin-top:3px">${estado}</div>
-          <div class="lic-meta" style="font-size:11px;color:var(--txt3)">Vence: ${venceStr}</div>
+          <div class="lic-meta">${lic.nombre||""} · 📱 ${lic.waAdmin||""}</div>
+          <div class="lic-meta" style="color:${color}">${estado}</div>
         </div>
-        <div class="lic-btns" style="flex-direction:column;gap:5px">
+        <div class="lic-btns">
           ${lic.activa&&!vencido
-            ?`<button class="lb sus" data-id="${d.id}">🔒 Bloquear</button>`
-            :`<button class="lb act" data-id="${d.id}">🔓 Activar</button>`}
-          <button class="lb ren" data-id="${d.id}" data-dias="${lic.dias||30}">⏱️ Extender</button>
-          <button class="lb del" data-id="${d.id}">🗑 Eliminar</button>
+            ?`<button class="lb sus" data-id="${d.id}">Suspender</button>`
+            :`<button class="lb act" data-id="${d.id}">Activar</button>`}
+          <button class="lb ren" data-id="${d.id}" data-dias="${lic.dias||30}">+${lic.dias||30}d</button>
+          <button class="lb del" data-id="${d.id}">Eliminar</button>
         </div>
       `;
       el.querySelector(".lb.sus,.lb.act")?.addEventListener("click",async e=>{
         const licRef=doc(db,"licencias",e.target.dataset.id);
         const s=await getDoc(licRef);
-        if(!s.exists()) return;
-        const actual = s.data().activa;
-        await setDoc(licRef,{...s.data(), activa:!actual});
-        cargarLicencias();
-        toast(actual ? "🔒 Talonario bloqueado" : "🔓 Talonario activado", actual?"warn":"ok");
+        if(s.exists()) await setDoc(licRef,{...s.data(),activa:!s.data().activa});
+        cargarLicencias(); toast("Estado actualizado","ok");
       });
-      el.querySelector(".lb.ren")?.addEventListener("click", e=>{
-        abrirModalRenovar(e.target.dataset.id, e.target.dataset.dias);
+      el.querySelector(".lb.ren")?.addEventListener("click",async e=>{
+        const licRef=doc(db,"licencias",e.target.dataset.id);
+        const s=await getDoc(licRef); if(!s.exists()) return;
+        const d2=s.data();
+        const base=Math.max(Date.now(),d2.vence||Date.now());
+        const dias=parseInt(e.target.dataset.dias)||30;
+        await setDoc(licRef,{...d2,activa:true,vence:base+(dias*MS_DIA)});
+        cargarLicencias(); toast(`Renovada +${dias} días ✓`,"ok");
       });
       el.querySelector(".lb.del")?.addEventListener("click",async e=>{
-        if(!confirm(`¿Eliminar la licencia "${e.target.dataset.id}"?\nEl talonario quedará bloqueado permanentemente.`)) return;
+        if(!confirm("¿Eliminar esta licencia?")) return;
         await deleteDoc(doc(db,"licencias",e.target.dataset.id));
         cargarLicencias(); toast("Licencia eliminada","warn");
       });
       list.appendChild(el);
     });
-  }catch(e){console.error(e);list.innerHTML='<div class="empty">Error al cargar licencias. Revisa la conexión.</div>';}
+  }catch(e){list.innerHTML='<div class="empty">Error al cargar licencias</div>';}
 }
 
 // ── TABS ──────────────────────────────────────
