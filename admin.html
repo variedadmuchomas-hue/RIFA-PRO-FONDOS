@@ -1632,7 +1632,7 @@ window.crearRifa = async function() {
 
     // Mostrar resultado
     const base = location.origin;
-    document.getElementById("linkTalonario").textContent = `${base}/r/${rifaId}`;
+ `  ${base}/index.html?id=${rifaId}`
     document.getElementById("linkAdmin").textContent     = `${base}/miadmin.html?id=${rifaId}`;
     document.getElementById("linkClave").textContent     = claveAdmin;
     document.getElementById("resultadoRifa").style.display = "block";
