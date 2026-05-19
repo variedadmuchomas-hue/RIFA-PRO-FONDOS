@@ -1,889 +1,1724 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Admin — Rifa STEM</title>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#0f1117;--s1:#1a1d26;--s2:#222635;--s3:#2a2f45;
-  --border:#2e3347;--border2:#3d4260;
-  --green:#22c55e;--gd:#15803d;--gbg:#052e16;
-  --yellow:#f59e0b;--yd:#b45309;--ybg:#2d1a00;
-  --red:#ef4444;--rd:#b91c1c;--rbg:#2d0a0a;
-  --blue:#3b82f6;--bd:#1d4ed8;--bbg:#0c1a3d;
-  --purple:#a855f7;--pd:#7c3aed;
-  --txt:#e2e8f0;--txt2:#94a3b8;--txt3:#64748b;--r:10px;
-}
-body{font-family:"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
-.lw{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-.lc{background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:36px 28px;width:100%;max-width:340px}
-.llogo{text-align:center;margin-bottom:24px}
-.licon{width:56px;height:56px;background:var(--bbg);border:1px solid var(--blue);border-radius:14px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:26px}
-.llogo h1{font-size:20px;font-weight:700}
-.llogo p{font-size:12px;color:var(--txt2);margin-top:3px}
-.fg{margin-bottom:14px}
-.fg label{display:block;font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;font-weight:500}
-.fg input{width:100%;padding:10px 13px;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:15px;outline:none;transition:border .2s}
-.fg input:focus{border-color:var(--blue)}
-.btnp{width:100%;padding:11px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .15s}
-.btnp:hover{opacity:.87}.btnp:disabled{opacity:.45;cursor:default}
-.lerr{color:var(--red);font-size:13px;text-align:center;margin-top:9px;min-height:18px}
-#panel{display:none}
-.topbar{background:var(--s1);border-bottom:1px solid var(--border);padding:11px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;gap:10px;flex-wrap:wrap}
-.tb-l{display:flex;align-items:center;gap:10px}
-.tb-h{font-size:15px;font-weight:600}
-.cdot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pls 2s infinite}
-@keyframes pls{0%,100%{opacity:1}50%{opacity:.3}}
-.ctxt{font-size:12px;color:var(--green)}
-.bout{padding:6px 13px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--txt3);font-size:12px;cursor:pointer}
-.bout:hover{border-color:var(--red);color:var(--red)}
-.tabs{display:flex;gap:2px;background:var(--s2);border-bottom:1px solid var(--border);padding:0 16px;overflow-x:auto}
-.tab{padding:11px 16px;font-size:13px;font-weight:500;color:var(--txt3);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s,border .15s}
-.tab.act{color:var(--blue);border-color:var(--blue)}
-.main{max-width:1080px;margin:0 auto;padding:16px}
-.cbanner{background:var(--rbg);border:1px solid var(--rd);border-radius:8px;padding:9px 14px;font-size:13px;color:var(--red);margin-bottom:12px;display:none}
-.cbanner.show{display:flex;align-items:center;gap:8px}
-.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
-.sc{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px 12px;text-align:center}
-.sc .n{font-size:26px;font-weight:700}.sc .l{font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
-.sc.g{border-color:var(--gd)}.sc.g .n{color:var(--green)}
-.sc.y{border-color:var(--yd)}.sc.y .n{color:var(--yellow)}
-.sc.r{border-color:var(--rd)}.sc.r .n{color:var(--red)}
-.sc.b .n{color:var(--blue)}
-.prog{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:14px}
-.pt{display:flex;justify-content:space-between;font-size:12px;color:var(--txt2);margin-bottom:5px}
-.pb{height:7px;background:var(--border);border-radius:4px;overflow:hidden}
-.pf{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--green),var(--yellow));transition:width .6s}
-.pm{font-size:11px;color:var(--txt3);text-align:right;margin-top:4px}
-.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
-.fb{padding:6px 13px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--txt3);font-size:12px;cursor:pointer;transition:all .15s}
-.fa{background:var(--blue);color:#fff;border-color:transparent}
-.fl{background:var(--gd);color:#fff;border-color:var(--green)}
-.fr{background:var(--yd);color:#fff;border-color:var(--yellow)}
-.fp{background:var(--rd);color:#fff;border-color:var(--red)}
-.sb{flex:1;min-width:180px;padding:7px 11px;background:var(--s2);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:13px;outline:none}
-.sb:focus{border-color:var(--blue)}
-.dp{background:var(--s1);border:1px solid var(--border2);border-radius:var(--r);padding:16px;margin-bottom:14px;display:none}
-.dp.show{display:block}
-.dp-h{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-.dp-badge{width:46px;height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;flex-shrink:0}
-.dp-i{flex:1}.dp-name{font-size:16px;font-weight:600}.dp-c{font-size:13px;color:var(--txt2)}.dp-ts{font-size:11px;color:var(--txt3);margin-top:2px}
-.dp-btns{display:flex;gap:7px;flex-wrap:wrap}
-.ba{padding:8px 14px;border-radius:7px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s}
-.ba:hover{opacity:.82}
-.ba.g{background:var(--gd);color:#fff}.ba.r{background:var(--rd);color:#fff}
-.ba.y{background:var(--yd);color:#fff}.ba.gr{background:var(--s2);color:var(--txt2);border:1px solid var(--border)}
-.ba.cl{background:transparent;border:none;color:var(--txt3);font-size:18px;cursor:pointer}
-.ng{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:7px;margin-bottom:16px}
-.nc{background:var(--s1);border:1px solid var(--border);border-radius:8px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:transform .1s,border-color .15s;position:relative;outline:none}
-.nc:hover{transform:scale(1.07);border-color:var(--border2)}
-.nc .n{font-size:15px;font-weight:600;line-height:1}.nc .t{font-size:8px;text-transform:uppercase;margin-top:3px;letter-spacing:.03em}
-.nc.libre{border-color:var(--gd);background:var(--gbg)}.nc.libre .n{color:var(--green)}.nc.libre .t{color:var(--gd)}
-.nc.reservado{border-color:var(--yd);background:var(--ybg)}.nc.reservado .n{color:var(--yellow)}.nc.reservado .t{color:var(--yd)}
-.nc.pagado{border-color:var(--rd);background:var(--rbg)}.nc.pagado .n{color:var(--red)}.nc.pagado .t{color:var(--rd)}
-.nc.reservado::after{content:"";position:absolute;top:4px;right:4px;width:5px;height:5px;border-radius:50%;background:var(--yellow);animation:pls 1.4s infinite}
-.st{font-size:12px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
-.rl{display:flex;flex-direction:column;gap:5px}
-.ri{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;display:flex;align-items:center;gap:10px}
-.rn{background:var(--ybg);color:var(--yellow);border:1px solid var(--yd);border-radius:6px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
-.ri-i{flex:1}.ri-name{font-size:14px;font-weight:500}.ri-c{font-size:12px;color:var(--txt2)}.ri-ts{font-size:11px;color:var(--txt3)}
-.rb{padding:5px 10px;border-radius:5px;border:none;font-size:11px;font-weight:600;cursor:pointer;transition:opacity .15s}
-.rb:hover{opacity:.8}
-.rb.ok{background:var(--gd);color:#fff}.rb.dl{background:transparent;border:1px solid var(--border);color:var(--txt3)}
-.rb.dl:hover{border-color:var(--red);color:var(--red)}
-.empty{text-align:center;padding:20px;color:var(--txt3);font-size:13px}
-.ebar{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
-.bex{padding:8px 15px;border-radius:8px;border:1px solid var(--border);background:var(--s2);color:var(--txt2);font-size:13px;cursor:pointer}
-.bex:hover{border-color:var(--blue);color:var(--blue)}
-/* EDITOR */
-.esec{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:14px}
-.esec-title{font-size:12px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;display:flex;align-items:center;gap:6px}
-.ef{margin-bottom:12px}
-.ef:last-child{margin-bottom:0}
-.ef label{display:block;font-size:12px;color:var(--txt3);font-weight:500;margin-bottom:5px}
-.ef input,.ef textarea{width:100%;padding:10px 13px;background:var(--s1);border:1px solid var(--border);border-radius:8px;color:var(--txt);font-size:14px;outline:none;transition:border .2s;resize:vertical}
-.ef input:focus,.ef textarea:focus{border-color:var(--purple)}
-.ef .hint{font-size:11px;color:var(--txt3);margin-top:4px}
-.ef-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:560px){.ef-grid{grid-template-columns:1fr}}
-/* Nequi — solo lectura con copy */
-.nequi-readonly{width:100%;padding:10px 13px;background:var(--s1);border:1px solid var(--border);border-radius:8px;color:var(--green);font-size:14px;font-weight:600;cursor:pointer;user-select:all;-webkit-user-select:all;letter-spacing:.03em}
-.nequi-readonly:focus{outline:2px solid var(--green)}
-.prev-box{background:linear-gradient(160deg,#0d1b3e,#1a237e,#0d1b3e);border-radius:var(--r);padding:14px;text-align:center;margin-bottom:14px;border:1px solid #1e2a6e}
-.prev-badge{display:inline-block;background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.4);color:#fde68a;font-size:11px;padding:3px 12px;border-radius:20px;margin-bottom:7px}
-.prev-h1{font-size:16px;font-weight:700;color:#fff;line-height:1.35;margin-bottom:3px}
-.prev-sub{font-size:12px;color:#93c5fd}
-.prev-chips{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:8px}
-.prev-chip{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:4px 10px;font-size:12px;color:#e0e7ff}
-.prev-chip b{color:#fff}
-.btn-save{width:100%;padding:13px;background:linear-gradient(135deg,var(--pd),var(--purple));color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .15s;margin-top:6px}
-.btn-save:hover{opacity:.88}.btn-save:disabled{opacity:.45;cursor:default}
-/* LICENCIAS */
-.lic-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
-.lic-badge{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.lic-info{flex:1}
-.lic-id{font-size:13px;font-weight:600;font-family:monospace}
-.lic-meta{font-size:12px;color:var(--txt2);margin-top:2px}
-.lic-btns{display:flex;gap:6px;flex-wrap:wrap}
-.lb{padding:5px 11px;border-radius:6px;border:none;font-size:12px;font-weight:600;cursor:pointer}
-.lb.act{background:var(--gd);color:#fff}.lb.sus{background:var(--rd);color:#fff}
-.lb.ren{background:var(--bd);color:#fff}.lb.del{background:transparent;border:1px solid var(--border);color:var(--txt3)}
-.lb.del:hover{border-color:var(--red);color:var(--red)}
-.new-lic-form{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:14px}
-.new-lic-form h3{font-size:14px;font-weight:600;margin-bottom:10px;color:var(--txt2)}
-.lic-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:500px){.lic-grid{grid-template-columns:1fr}}
-/* TOASTS */
-.toasts{position:fixed;bottom:16px;right:16px;display:flex;flex-direction:column;gap:7px;z-index:999;max-width:300px}
-.toast{background:var(--s1);border:1px solid var(--border);border-radius:9px;padding:10px 14px;font-size:13px;animation:sIn .3s ease;box-shadow:0 4px 20px rgba(0,0,0,.4)}
-.toast.ok{border-left:3px solid var(--green);color:var(--green)}
-.toast.warn{border-left:3px solid var(--yellow);color:var(--yellow)}
-.toast.err{border-left:3px solid var(--red);color:var(--red)}
-.toast.inf{border-left:3px solid var(--blue);color:var(--blue)}
-@keyframes sIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
-@media(max-width:480px){.ng{grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:5px}.nc .n{font-size:13px}.nc .t{display:none}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a0a0f">
+  <title>Super Admin — RIFA PRO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-base:          #0a0a0f;
+      --bg-surface:       #12121a;
+      --bg-elevated:      #1a1a26;
+      --bg-hover:         #22223a;
+      --accent-primary:   #6366f1;
+      --accent-secondary: #8b5cf6;
+      --accent-glow:      rgba(99,102,241,0.18);
+      --num-libre:        #22c55e;
+      --num-reservado:    #f59e0b;
+      --num-pagado:       #ef4444;
+      --text-primary:     #f1f5f9;
+      --text-secondary:   #94a3b8;
+      --text-muted:       #475569;
+      --border-subtle:    rgba(255,255,255,0.06);
+      --border-normal:    rgba(255,255,255,0.12);
+      --border-accent:    rgba(99,102,241,0.35);
+      --whatsapp:         #25d366;
+      --status-activa:    #22c55e;
+      --status-vencer:    #f59e0b;
+      --status-vencida:   #ef4444;
+      --status-congelada: #6366f1;
+      --shadow-card:      0 4px 24px rgba(0,0,0,0.4);
+      --shadow-glow:      0 0 24px rgba(99,102,241,0.12);
+      --radius-sm:   8px;
+      --radius-md:   12px;
+      --radius-lg:   16px;
+      --radius-xl:   24px;
+      --radius-full: 9999px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-base);
+      color: var(--text-primary);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ══════════════════════════════════
+       LOGIN
+    ══════════════════════════════════ */
+    #loginScreen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.12) 0%, transparent 70%);
+    }
+
+    .login-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-normal);
+      border-radius: var(--radius-xl);
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: var(--shadow-card), var(--shadow-glow);
+      animation: fadeInUp 0.3s ease;
+    }
+
+    .login-logo {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .login-logo .logo-icon { font-size: 48px; display: block; margin-bottom: 12px; }
+    .login-logo h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: 22px; font-weight: 800;
+      background: linear-gradient(135deg, #f1f5f9, #a5b4fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .login-logo p { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
+
+    .login-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent-glow);
+      border: 1px solid var(--border-accent);
+      color: #a5b4fc;
+      border-radius: var(--radius-full);
+      padding: 4px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 28px;
+      letter-spacing: 0.5px;
+    }
+
+    .input-group { margin-bottom: 14px; }
+    .input-group label {
+      display: block;
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .input {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-normal);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      padding: 12px 14px;
+      font-size: 15px;
+      width: 100%;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .input::placeholder { color: var(--text-muted); }
+
+    #loginError {
+      display: none;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.25);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #fca5a5;
+      margin-bottom: 14px;
+    }
+
+    /* ══════════════════════════════════
+       BOTONES
+    ══════════════════════════════════ */
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      color: white; border: none;
+      border-radius: var(--radius-md);
+      padding: 13px 24px;
+      font-weight: 700; font-size: 14px;
+      cursor: pointer; width: 100%;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(99,102,241,0.35);
+      letter-spacing: 0.2px;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(99,102,241,0.45); }
+    .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+    .btn-secondary {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--border-normal);
+      border-radius: var(--radius-md);
+      padding: 10px 18px;
+      font-weight: 600; font-size: 13px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.15s;
+    }
+    .btn-secondary:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+
+    .btn-danger {
+      background: rgba(239,68,68,0.12);
+      color: #fca5a5;
+      border: 1px solid rgba(239,68,68,0.25);
+      border-radius: var(--radius-md);
+      padding: 10px 18px;
+      font-weight: 600; font-size: 13px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.15s;
+    }
+    .btn-danger:hover { background: rgba(239,68,68,0.2); }
+
+    .btn-sm {
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12px; font-weight: 600;
+      border: 1px solid var(--border-normal);
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .btn-sm:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+    .btn-sm.peligro:hover { border-color: var(--status-vencida); color: var(--status-vencida); }
+    .btn-sm.verde { border-color: rgba(34,197,94,0.3); color: var(--status-activa); background: rgba(34,197,94,0.08); }
+    .btn-sm.verde:hover { background: rgba(34,197,94,0.15); }
+
+    /* ══════════════════════════════════
+       LAYOUT PRINCIPAL
+    ══════════════════════════════════ */
+    #adminPanel { display: none; }
+
+    /* Topbar */
+    .topbar {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .topbar-brand {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .topbar-brand .brand-icon { font-size: 24px; }
+    .topbar-brand h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: 16px; font-weight: 700;
+    }
+    .topbar-brand .brand-sub {
+      font-size: 11px; color: var(--text-muted); margin-top: -2px;
+    }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .topbar-user {
+      font-size: 12px; color: var(--text-secondary);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .topbar-user span { color: #a5b4fc; font-weight: 600; }
+
+    /* Sidebar + contenido */
+    .layout {
+      display: flex;
+      min-height: calc(100vh - 60px);
+    }
+
+    .sidebar {
+      width: 220px;
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border-subtle);
+      padding: 20px 12px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 60px;
+      height: calc(100vh - 60px);
+      overflow-y: auto;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .content { padding: 16px; }
+    }
+
+    .nav-section {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      font-weight: 600;
+      padding: 0 8px;
+      margin-bottom: 6px;
+      margin-top: 16px;
+    }
+    .nav-section:first-child { margin-top: 0; }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: all 0.15s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      font-family: 'Inter', sans-serif;
+    }
+    .nav-item:hover { background: var(--bg-elevated); color: var(--text-primary); }
+    .nav-item.active {
+      background: var(--accent-glow);
+      color: #a5b4fc;
+      border: 1px solid var(--border-accent);
+    }
+    .nav-item .nav-icon { font-size: 16px; flex-shrink: 0; }
+    .nav-badge {
+      margin-left: auto;
+      background: var(--status-vencer);
+      color: #000;
+      border-radius: var(--radius-full);
+      padding: 1px 7px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .content {
+      flex: 1;
+      padding: 28px 24px;
+      max-width: 960px;
+    }
+
+    /* ══════════════════════════════════
+       SECCIONES (tabs)
+    ══════════════════════════════════ */
+    .seccion { display: none; }
+    .seccion.activa { display: block; animation: fadeInUp 0.2s ease; }
+
+    /* ══════════════════════════════════
+       DASHBOARD
+    ══════════════════════════════════ */
+    .page-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 22px; font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .page-sub {
+      color: var(--text-secondary); font-size: 13px;
+      margin-bottom: 24px;
+    }
+
+    .kpis-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    @media (min-width: 600px) { .kpis-grid { grid-template-columns: repeat(4, 1fr); } }
+
+    .kpi-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 18px 16px;
+      transition: all 0.2s;
+    }
+    .kpi-card:hover { border-color: var(--border-normal); box-shadow: var(--shadow-glow); }
+    .kpi-icon { font-size: 22px; margin-bottom: 10px; display: block; }
+    .kpi-num {
+      font-family: 'Sora', sans-serif;
+      font-size: 28px; font-weight: 800;
+      line-height: 1; display: block;
+      margin-bottom: 4px;
+    }
+    .kpi-label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+    .kpi-card.verde  .kpi-num { color: var(--status-activa); }
+    .kpi-card.amarillo .kpi-num { color: var(--status-vencer); }
+    .kpi-card.rojo   .kpi-num { color: var(--status-vencida); }
+    .kpi-card.indigo .kpi-num { color: var(--accent-primary); }
+
+    /* Alertas por vencer */
+    .alertas-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 15px; font-weight: 600;
+      margin-bottom: 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .alerta-chip {
+      background: rgba(245,158,11,0.1);
+      border: 1px solid rgba(245,158,11,0.25);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .alerta-chip-info { display: flex; flex-direction: column; gap: 2px; }
+    .alerta-chip-nombre { font-weight: 600; font-size: 14px; }
+    .alerta-chip-dias { font-size: 12px; color: var(--status-vencer); }
+
+    /* ══════════════════════════════════
+       LICENCIAS
+    ══════════════════════════════════ */
+    .licencias-toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .search-input {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-normal);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      padding: 9px 14px;
+      font-size: 13px;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+      flex: 1; min-width: 180px;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus { border-color: var(--accent-primary); }
+    .search-input::placeholder { color: var(--text-muted); }
+
+    .licencia-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 12px;
+      transition: all 0.2s;
+    }
+    .licencia-card:hover { border-color: var(--border-normal); }
+    .licencia-card.congelada { border-left: 3px solid var(--status-congelada); }
+    .licencia-card.vencida   { border-left: 3px solid var(--status-vencida); opacity: 0.7; }
+    .licencia-card.por-vencer { border-left: 3px solid var(--status-vencer); }
+
+    .lic-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+      gap: 12px;
+    }
+    .lic-nombre {
+      font-family: 'Sora', sans-serif;
+      font-size: 16px; font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .lic-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; color: var(--text-muted);
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 11px;
+      border-radius: var(--radius-full);
+      font-size: 11px; font-weight: 700;
+      flex-shrink: 0;
+      text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .badge.activa    { background: rgba(34,197,94,0.12);  color: var(--status-activa); }
+    .badge.por-vencer{ background: rgba(245,158,11,0.12); color: var(--status-vencer); }
+    .badge.vencida   { background: rgba(239,68,68,0.12);  color: var(--status-vencida); }
+    .badge.congelada { background: rgba(99,102,241,0.12); color: var(--status-congelada); }
+    .badge.cerrada   { background: rgba(71,85,105,0.2);   color: var(--text-muted); }
+
+    /* Barra de licencia */
+    .lic-barra-wrap { margin-bottom: 14px; }
+    .lic-barra-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+    .lic-barra-label strong { color: var(--text-primary); }
+    .lic-barra-track {
+      height: 6px;
+      background: var(--bg-elevated);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    .lic-barra-fill {
+      height: 100%;
+      border-radius: var(--radius-full);
+      transition: width 0.6s ease;
+    }
+
+    /* Stats mini de rifa */
+    .lic-stats {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .lic-stat { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+    .lic-stat .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .lic-stat .dot.libre     { background: var(--status-activa); }
+    .lic-stat .dot.reservado { background: var(--status-vencer); }
+    .lic-stat .dot.pagado    { background: var(--status-vencida); }
+
+    /* Acciones */
+    .lic-acciones {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    /* ══════════════════════════════════
+       CREAR RIFA
+    ══════════════════════════════════ */
+    .form-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+    .form-section-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 14px; font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    @media (min-width: 600px) {
+      .form-grid.cols2 { grid-template-columns: 1fr 1fr; }
+      .form-grid.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .form-group .hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    select.input {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+
+    /* Resultado de creación */
+    .resultado-rifa {
+      display: none;
+      background: rgba(34,197,94,0.08);
+      border: 1px solid rgba(34,197,94,0.25);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-top: 16px;
+    }
+    .resultado-rifa h3 {
+      font-family: 'Sora', sans-serif;
+      font-size: 16px; font-weight: 700;
+      color: var(--status-activa);
+      margin-bottom: 16px;
+    }
+    .link-box {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-normal);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      gap: 10px;
+    }
+    .link-box span {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-secondary);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ══════════════════════════════════
+       MODAL NÚMEROS
+    ══════════════════════════════════ */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(6px);
+      align-items: center; justify-content: center;
+      z-index: 1000; padding: 16px;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-normal);
+      border-radius: var(--radius-xl);
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 680px;
+      max-height: 88vh;
+      overflow-y: auto;
+      position: relative;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+      animation: fadeInUp 0.25s ease;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      gap: 12px;
+    }
+    .modal-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 18px; font-weight: 700;
+    }
+    .modal-sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+    .modal-close {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      border-radius: 50%; width: 32px; height: 32px;
+      cursor: pointer; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: all 0.15s;
+    }
+    .modal-close:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+    /* Grid números en modal */
+    .modal-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .modal-stat {
+      background: var(--bg-elevated);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      text-align: center;
+    }
+    .modal-stat .num { font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 700; }
+    .modal-stat .lbl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .modal-stat.verde  .num { color: var(--status-activa); }
+    .modal-stat.amarillo .num { color: var(--status-vencer); }
+    .modal-stat.rojo   .num { color: var(--status-vencida); }
+
+    .grid-numeros-modal {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 5px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 480px) { .grid-numeros-modal { grid-template-columns: repeat(7, 1fr); } }
+
+    .num-chip {
+      aspect-ratio: 1;
+      border-radius: var(--radius-sm);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      border: none; cursor: default;
+    }
+    .num-chip.libre     { background: rgba(34,197,94,0.2); color: var(--status-activa); }
+    .num-chip.reservado { background: rgba(245,158,11,0.2); color: var(--status-vencer); }
+    .num-chip.pagado    { background: rgba(239,68,68,0.2); color: var(--status-vencida); }
+
+    /* Lista de compradores en modal */
+    .comprador-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      background: var(--bg-elevated);
+      border-radius: var(--radius-md);
+      margin-bottom: 6px;
+      border-left: 3px solid transparent;
+    }
+    .comprador-row.reservado { border-left-color: var(--status-vencer); }
+    .comprador-row.pagado    { border-left-color: var(--status-activa); }
+    .comprador-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 18px; font-weight: 700;
+      min-width: 40px; text-align: center;
+    }
+    .comprador-info { flex: 1; }
+    .comprador-nombre { font-weight: 600; font-size: 13px; }
+    .comprador-tel { font-size: 11px; color: var(--text-secondary); }
+
+    /* Modal extender */
+    .modal-sm .modal-card { max-width: 380px; }
+
+    /* ══════════════════════════════════
+       TOAST
+    ══════════════════════════════════ */
+    .toast {
+      position: fixed; bottom: 24px; right: 20px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-normal);
+      border-radius: var(--radius-md);
+      padding: 12px 18px;
+      font-size: 13px; font-weight: 500;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      z-index: 9999; max-width: 320px;
+      animation: fadeInUp 0.25s ease;
+      border-left-width: 3px;
+    }
+
+    /* ══════════════════════════════════
+       MISC
+    ══════════════════════════════════ */
+    .divider {
+      height: 1px; background: var(--border-subtle);
+      margin: 20px 0;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-muted);
+    }
+    .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+    .empty-state p { font-size: 14px; }
+
+    .spinner {
+      width: 28px; height: 28px;
+      border: 3px solid var(--border-normal);
+      border-top-color: var(--accent-primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 32px auto;
+    }
+
+    /* Tabs móvil */
+    .mobile-tabs {
+      display: none;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 16px;
+      overflow-x: auto;
+      gap: 0;
+    }
+    @media (max-width: 768px) { .mobile-tabs { display: flex; } }
+    .mobile-tab {
+      padding: 14px 16px;
+      font-size: 12px; font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: all 0.15s;
+      font-family: 'Inter', sans-serif;
+      background: none; border: none;
+      border-bottom: 2px solid transparent;
+    }
+    .mobile-tab.active { color: var(--accent-primary); border-bottom-color: var(--accent-primary); }
+
+    /* ══════════════════════════════════
+       ANIMACIONES
+    ══════════════════════════════════ */
+    @keyframes spin     { to { transform: rotate(360deg); } }
+    @keyframes fadeInUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+  </style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<div class="lw" id="loginWrap">
-  <div class="lc">
-    <div class="llogo">
-      <div class="licon">🔐</div>
-      <h1>Panel Administrador</h1>
-      <p>Rifa STEM — Acceso exclusivo</p>
+<!-- ════════════════════════════════════
+     LOGIN
+════════════════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <span class="logo-icon">🎟️</span>
+      <h1>RIFA PRO FONDOS</h1>
+      <p>Plataforma de administración</p>
     </div>
-    <div class="fg">
-      <label>Contraseña</label>
-      <input type="password" id="passInput" placeholder="Ingresa tu contraseña"
-        autocomplete="current-password" onkeydown="if(event.key==='Enter')login()">
+    <div style="text-align:center;margin-bottom:24px">
+      <span class="login-badge">🔐 Acceso Super Admin</span>
     </div>
-    <button class="btnp" id="btnLogin" onclick="login()">Entrar al panel</button>
-    <div class="lerr" id="lerr"></div>
+
+    <div id="loginError"></div>
+
+    <div class="input-group">
+      <label for="loginEmail">Correo electrónico</label>
+      <input type="email" id="loginEmail" class="input"
+             placeholder="admin@ejemplo.com" autocomplete="email">
+    </div>
+    <div class="input-group" style="margin-bottom:20px">
+      <label for="loginPass">Contraseña</label>
+      <input type="password" id="loginPass" class="input"
+             placeholder="••••••••" autocomplete="current-password">
+    </div>
+
+    <button class="btn-primary" id="btnLogin" onclick="hacerLogin()">
+      Iniciar sesión
+    </button>
   </div>
 </div>
 
-<!-- PANEL ADMIN -->
-<div id="panel">
+<!-- ════════════════════════════════════
+     PANEL ADMIN
+════════════════════════════════════ -->
+<div id="adminPanel">
+
+  <!-- Topbar -->
   <div class="topbar">
-    <div class="tb-l">
-      <span class="tb-h">🎟️ Admin — Rifa STEM</span>
-      <div class="cdot" id="cDot"></div>
-      <span class="ctxt" id="cTxt">Conectando...</span>
-    </div>
-    <button class="bout" onclick="logout()">Cerrar sesión</button>
-  </div>
-
-  <div class="tabs">
-    <div class="tab act" onclick="setTab('numeros',this)">📊 Números</div>
-    <div class="tab"     onclick="setTab('proceso',this)">⏳ En proceso</div>
-    <div class="tab"     onclick="setTab('editor',this)">✏️ Editar rifa</div>
-    <div class="tab"     onclick="setTab('licencias',this)">🔑 Licencias</div>
-  </div>
-
-  <div class="main">
-    <div class="cbanner" id="cBanner">⚠️ Sin conexión a Firebase</div>
-
-    <!-- ═══ NÚMEROS ═══ -->
-    <div id="tNumeros">
-      <div class="sg">
-        <div class="sc g"><div class="n" id="aL">—</div><div class="l">Disponibles</div></div>
-        <div class="sc y"><div class="n" id="aR">—</div><div class="l">En proceso</div></div>
-        <div class="sc r"><div class="n" id="aP">—</div><div class="l">Vendidos</div></div>
-        <div class="sc b"><div class="n" id="aM">—</div><div class="l">Recaudado</div></div>
-      </div>
-      <div class="prog">
-        <div class="pt"><span>Progreso de ventas</span><span id="aPct" style="font-weight:600">0%</span></div>
-        <div class="pb"><div class="pf" id="aProg" style="width:0%"></div></div>
-        <div class="pm" id="aMeta">Cargando...</div>
-      </div>
-      <div class="dp" id="detPanel"></div>
-      <div class="filters">
-        <button class="fb fa" onclick="setF('all',this,'fa')">Todos</button>
-        <button class="fb"    onclick="setF('libre',this,'fl')">Libres</button>
-        <button class="fb"    onclick="setF('reservado',this,'fr')">En proceso</button>
-        <button class="fb"    onclick="setF('pagado',this,'fp')">Vendidos</button>
-        <input class="sb" id="sbx" type="text"
-          placeholder="Buscar número o nombre..." oninput="renderGrid()">
-      </div>
-      <div class="ng" id="aGrid"></div>
-      <div class="ebar">
-        <button class="bex" onclick="exportCSV('todo')">⬇ Exportar todo</button>
-        <button class="bex" onclick="exportCSV('reservado')">⬇ En proceso</button>
-        <button class="bex" onclick="exportCSV('pagado')">⬇ Vendidos</button>
-        <button class="bex" onclick="exportTalonario()">📄 Talonario completo</button>
+    <div class="topbar-brand">
+      <span class="brand-icon">🎟️</span>
+      <div>
+        <div style="font-family:'Sora',sans-serif;font-size:15px;font-weight:700">RIFA PRO</div>
+        <div class="brand-sub">Super Admin</div>
       </div>
     </div>
-
-    <!-- ═══ EN PROCESO ═══ -->
-    <div id="tProceso" style="display:none">
-      <div class="st">Números en proceso (más antiguos primero)</div>
-      <div class="rl" id="resList"></div>
-    </div>
-
-    <!-- ═══ EDITOR VISUAL ═══ -->
-    <div id="tEditor" style="display:none">
-      <div style="font-size:15px;font-weight:600;margin-bottom:4px">✏️ Editor de la rifa</div>
-      <div style="font-size:13px;color:var(--txt2);margin-bottom:16px">
-        Todos los cambios se publican en tiempo real. Sin tocar código.
+    <div class="topbar-right">
+      <div class="topbar-user">
+        👤 <span id="adminEmail">admin</span>
       </div>
-
-      <!-- Vista previa -->
-      <div style="font-size:10px;color:var(--txt3);text-align:center;margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em">Vista previa en vivo</div>
-      <div class="prev-box">
-        <div class="prev-badge" id="prevBadge">🎟️ Rifa Oficial</div>
-        <div class="prev-h1" id="prevTitulo">Juega el 16 de mayo de 2026</div>
-        <div class="prev-sub" id="prevSub">Dos últimas cifras</div>
-        <div class="prev-chips">
-          <div class="prev-chip">🥃 <b id="prevP1">Buchanan's</b></div>
-          <div class="prev-chip">🍹 <b id="prevP2">Ron Medellín</b></div>
-          <div class="prev-chip">💵 <b id="prevValor">$10.000</b></div>
-        </div>
-      </div>
-
-      <div class="esec">
-        <div class="esec-title">📝 Encabezado</div>
-        <div class="ef">
-          <label>Badge superior</label>
-          <input id="eBadge" type="text" placeholder="🎟️ Rifa Oficial — Apoyo STEM"
-            oninput="prevBadge.textContent=this.value">
-        </div>
-        <div class="ef-grid">
-          <div class="ef">
-            <label>Título principal</label>
-            <textarea id="eTitulo" rows="2" placeholder="Juega el 16 de mayo..."
-              oninput="prevTitulo.innerHTML=this.value.replace(/\n/g,'<br>')"></textarea>
-          </div>
-          <div class="ef">
-            <label>Subtítulo</label>
-            <input id="eSub" type="text" placeholder="Dos últimas cifras..."
-              oninput="prevSub.textContent=this.value">
-          </div>
-        </div>
-      </div>
-
-      <div class="esec">
-        <div class="esec-title">🏆 Premios y sorteo</div>
-        <div class="ef-grid">
-          <div class="ef">
-            <label>Premio 1</label>
-            <input id="eP1" type="text" placeholder="Buchanan's DeLuxe 12Y"
-              oninput="prevP1.textContent=this.value">
-          </div>
-          <div class="ef">
-            <label>Premio 2</label>
-            <input id="eP2" type="text" placeholder="Ron Medellín Añejo"
-              oninput="prevP2.textContent=this.value">
-          </div>
-          <div class="ef">
-            <label>Valor por número</label>
-            <input id="eValor" type="text" placeholder="$10.000"
-              oninput="prevValor.textContent=this.value">
-          </div>
-          <div class="ef">
-            <label>Fecha del sorteo</label>
-            <input id="eFecha" type="text" placeholder="16 de mayo de 2026">
-          </div>
-        </div>
-      </div>
-
-      <div class="esec">
-        <div class="esec-title">📱 Datos de pago</div>
-        <div class="ef">
-          <label>Número Nequi / Daviplata para el botón "Confirmar pago"</label>
-          <input id="eWaAdmin" type="text" placeholder="3208871253 (sin espacios, sin +57)">
-          <div class="hint">Este es el número que recibe los comprobantes de los clientes. Puede ser diferente al Nequi de cobro.</div>
-        </div>
-        <div class="ef">
-          <label>Números Nequi mostrados en el talonario</label>
-          <!-- SOLO LECTURA — solo puede copiar, no editar -->
-          <div style="position:relative">
-            <div class="nequi-readonly" id="eNequiDisplay"
-                 onclick="copiarCampo('eNequiInput','eNequiDisplay')"
-                 title="Haz clic para copiar">320 887 1253 · 311 457 1322</div>
-            <input type="hidden" id="eNequiInput" value="320 887 1253 · 311 457 1322">
-          </div>
-          <div class="hint">👆 Haz clic para copiar · Para cambiar el número escríbelo abajo y guarda.</div>
-          <input id="eNequiEditar" type="text" placeholder="Escribe aquí para cambiar los números Nequi"
-            style="margin-top:6px" oninput="actualizarNequiPreview(this.value)">
-        </div>
-        <div class="ef">
-          <label>Texto causa / misión</label>
-          <textarea id="eCausa" rows="2" placeholder="🎓 Apoya a nuestros niños..."></textarea>
-        </div>
-        <div class="ef">
-          <label>Descripción causa</label>
-          <textarea id="eCausaSub" rows="2" placeholder="Tu número ayuda a..."></textarea>
-        </div>
-      </div>
-
-      <div class="esec">
-        <div class="esec-title">📸 Fotos (URL de imagen)</div>
-        <div class="ef-grid">
-          <div class="ef">
-            <label>Foto izquierda (niños/protagonistas)</label>
-            <input id="eFoto2" type="text" placeholder="https://... URL de imagen">
-            <div class="hint">Deja vacío para usar la foto original</div>
-          </div>
-          <div class="ef">
-            <label>Foto derecha (premios)</label>
-            <input id="eFoto1" type="text" placeholder="https://... URL de imagen">
-            <div class="hint">Deja vacío para usar la foto original</div>
-          </div>
-        </div>
-      </div>
-
-      <button class="btn-save" id="btnSave" onclick="guardarConfig()">
-        💾 Guardar y publicar todos los cambios
+      <button class="btn-secondary" style="padding:7px 14px;font-size:12px" onclick="cerrarSesion()">
+        Salir
       </button>
-      <div style="font-size:12px;color:var(--txt3);text-align:center;margin-top:8px">
-        Los cambios aparecen en el talonario de forma inmediata para todos los usuarios.
-      </div>
     </div>
+  </div>
 
-    <!-- ═══ LICENCIAS ═══ -->
-    <div id="tLicencias" style="display:none">
-      <div style="font-size:15px;font-weight:600;margin-bottom:4px">🔑 Gestión de licencias</div>
-      <div style="font-size:13px;color:var(--txt2);margin-bottom:16px;line-height:1.5">
-        Cada talonario tiene un ID de licencia. Una licencia activa por 30 días.
-        Al vencer, el talonario se bloquea automáticamente hasta que se renueve.
-      </div>
+  <!-- Tabs móvil -->
+  <div class="mobile-tabs">
+    <button class="mobile-tab active" onclick="cambiarSeccion('dashboard',this)">📊 Dashboard</button>
+    <button class="mobile-tab" onclick="cambiarSeccion('licencias',this)">🔑 Licencias</button>
+    <button class="mobile-tab" onclick="cambiarSeccion('crear',this)">➕ Crear</button>
+  </div>
 
-      <!-- Crear nueva licencia -->
-      <div class="new-lic-form">
-        <h3>➕ Crear nueva licencia</h3>
-        <div class="lic-grid">
-          <div class="ef">
-            <label>ID del talonario</label>
-            <input type="text" id="licId" placeholder="rifa-stem-001">
-            <div class="hint">Debe coincidir con LICENCIA_ID en index.html</div>
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div class="nav-section">Principal</div>
+      <button class="nav-item active" id="nav-dashboard" onclick="cambiarSeccion('dashboard',this)">
+        <span class="nav-icon">📊</span> Dashboard
+      </button>
+
+      <div class="nav-section">Rifas</div>
+      <button class="nav-item" id="nav-licencias" onclick="cambiarSeccion('licencias',this)">
+        <span class="nav-icon">🔑</span> Licencias
+        <span class="nav-badge" id="badgeVencer" style="display:none">!</span>
+      </button>
+      <button class="nav-item" id="nav-crear" onclick="cambiarSeccion('crear',this)">
+        <span class="nav-icon">➕</span> Crear rifa
+      </button>
+    </nav>
+
+    <!-- Contenido -->
+    <main class="content">
+
+      <!-- ── DASHBOARD ── -->
+      <section class="seccion activa" id="sec-dashboard">
+        <div class="page-title">📊 Dashboard</div>
+        <div class="page-sub" id="dashFecha">Cargando...</div>
+
+        <div class="kpis-grid">
+          <div class="kpi-card verde">
+            <span class="kpi-icon">✅</span>
+            <span class="kpi-num" id="kpiActivas">—</span>
+            <div class="kpi-label">Rifas activas</div>
           </div>
-          <div class="ef">
-            <label>WhatsApp del dueño del talonario</label>
-            <input type="text" id="licWa" placeholder="3201234567">
+          <div class="kpi-card indigo">
+            <span class="kpi-icon">🎟️</span>
+            <span class="kpi-num" id="kpiVendidos">—</span>
+            <div class="kpi-label">Números vendidos</div>
           </div>
-          <div class="ef">
-            <label>Días de licencia</label>
-            <input type="number" id="licDias" value="30" min="1" max="365">
+          <div class="kpi-card amarillo">
+            <span class="kpi-icon">⏸️</span>
+            <span class="kpi-num" id="kpiCongeladas">—</span>
+            <div class="kpi-label">Congeladas</div>
           </div>
-          <div class="ef">
-            <label>Nombre del cliente</label>
-            <input type="text" id="licNombre" placeholder="Nombre del usuario">
+          <div class="kpi-card rojo">
+            <span class="kpi-icon">⏰</span>
+            <span class="kpi-num" id="kpiVencidas">—</span>
+            <div class="kpi-label">Vencidas</div>
           </div>
         </div>
-        <button class="btn-save" style="margin-top:8px" onclick="crearLicencia()">
-          🔑 Crear licencia
-        </button>
-      </div>
 
-      <!-- Lista de licencias activas -->
-      <div class="st">Licencias registradas</div>
-      <div id="licList"><div class="empty">Cargando licencias...</div></div>
+        <div id="alertasVencer" style="display:none">
+          <div class="alertas-title">
+            ⚠️ Licencias por vencer
+          </div>
+          <div id="listaAlertas"></div>
+          <div class="divider"></div>
+        </div>
+
+        <div id="dashSpinner"><div class="spinner"></div></div>
+      </section>
+
+      <!-- ── LICENCIAS ── -->
+      <section class="seccion" id="sec-licencias">
+        <div class="page-title">🔑 Gestión de Licencias</div>
+        <div class="page-sub">Administra todos los talonarios activos</div>
+
+        <div class="licencias-toolbar">
+          <input type="text" class="search-input" id="buscarLicencia"
+                 placeholder="🔍 Buscar por nombre o ID..."
+                 oninput="filtrarLicencias()">
+          <button class="btn-secondary" onclick="cargarLicencias()">↻ Actualizar</button>
+        </div>
+
+        <div id="licenciasSpinner"><div class="spinner"></div></div>
+        <div id="listaLicencias"></div>
+      </section>
+
+      <!-- ── CREAR RIFA ── -->
+      <section class="seccion" id="sec-crear">
+        <div class="page-title">➕ Crear nueva rifa</div>
+        <div class="page-sub">Completa los datos para generar un nuevo talonario</div>
+
+        <!-- Cliente -->
+        <div class="form-card">
+          <div class="form-section-title">👤 Datos del cliente</div>
+          <div class="form-grid cols2">
+            <div class="form-group">
+              <label>Nombre del cliente *</label>
+              <input type="text" id="fClienteNombre" class="input" placeholder="Juan Pérez">
+            </div>
+            <div class="form-group">
+              <label>WhatsApp del cliente *</label>
+              <input type="tel" id="fClienteWsp" class="input" placeholder="3001234567">
+              <span class="hint">Este número recibe los comprobantes</span>
+            </div>
+            <div class="form-group">
+              <label>Contraseña mini-admin *</label>
+              <input type="text" id="fClaveAdmin" class="input" placeholder="rifa2025">
+              <span class="hint">El cliente usa esta clave para entrar a su panel</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rifa -->
+        <div class="form-card">
+          <div class="form-section-title">🎟️ Datos de la rifa</div>
+          <div class="form-grid cols2">
+            <div class="form-group" style="grid-column:1/-1">
+              <label>Nombre de la rifa *</label>
+              <input type="text" id="fNombre" class="input" placeholder="Rifa Navidad 2025">
+            </div>
+            <div class="form-group">
+              <label>Precio por número *</label>
+              <input type="number" id="fPrecio" class="input" placeholder="20000" min="0">
+            </div>
+            <div class="form-group">
+              <label>Método de pago</label>
+              <input type="text" id="fMetodoPago" class="input" placeholder="Nequi">
+            </div>
+            <div class="form-group">
+              <label>Número(s) Nequi / pago</label>
+              <input type="text" id="fNequi" class="input" placeholder="3208871253">
+              <span class="hint">Separar con comas si son varios</span>
+            </div>
+            <div class="form-group">
+              <label>Lotería</label>
+              <input type="text" id="fLoteria" class="input" placeholder="Lotería de Bogotá">
+            </div>
+            <div class="form-group">
+              <label>Fecha del sorteo</label>
+              <input type="date" id="fFechaSorteo" class="input">
+            </div>
+            <div class="form-group">
+              <label>Premio principal</label>
+              <input type="text" id="fPremio1" class="input" placeholder="Televisor Samsung 55&quot;">
+            </div>
+            <div class="form-group">
+              <label>Premio secundario</label>
+              <input type="text" id="fPremio2" class="input" placeholder="Bicicleta Trek">
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+              <label>Causa / descripción</label>
+              <input type="text" id="fCausa" class="input" placeholder="Fondos para el colegio">
+            </div>
+          </div>
+        </div>
+
+        <!-- Licencia -->
+        <div class="form-card">
+          <div class="form-section-title">⏱️ Licencia</div>
+          <div class="form-grid cols3">
+            <div class="form-group">
+              <label>Días de licencia</label>
+              <select id="fDiasLicencia" class="input">
+                <option value="15">15 días</option>
+                <option value="30" selected>30 días</option>
+                <option value="45">45 días</option>
+                <option value="60">60 días</option>
+                <option value="90">90 días</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div id="crearError" style="display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:var(--radius-md);padding:12px 16px;font-size:13px;color:#fca5a5;margin-bottom:16px"></div>
+
+        <button class="btn-primary" id="btnCrear" onclick="crearRifa()" style="max-width:280px">
+          ✅ Crear talonario completo
+        </button>
+
+        <!-- Resultado -->
+        <div class="resultado-rifa" id="resultadoRifa">
+          <h3>🎉 ¡Talonario creado exitosamente!</h3>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px">Comparte estos links con tu cliente:</p>
+
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:6px;font-weight:600">🎟️ LINK DEL TALONARIO (para compradores)</p>
+          <div class="link-box">
+            <span id="linkTalonario"></span>
+            <button class="btn-sm" onclick="copiarTexto('linkTalonario','🔗 Link copiado')">Copiar</button>
+          </div>
+
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:6px;font-weight:600;margin-top:12px">🔑 LINK DEL MINI-ADMIN (para el cliente)</p>
+          <div class="link-box">
+            <span id="linkAdmin"></span>
+            <button class="btn-sm" onclick="copiarTexto('linkAdmin','🔑 Link copiado')">Copiar</button>
+          </div>
+
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:6px;font-weight:600;margin-top:12px">🔐 CONTRASEÑA DEL MINI-ADMIN</p>
+          <div class="link-box">
+            <span id="linkClave" style="font-family:'JetBrains Mono',monospace"></span>
+            <button class="btn-sm" onclick="copiarTexto('linkClave','🔐 Clave copiada')">Copiar</button>
+          </div>
+
+          <div style="margin-top:16px">
+            <button class="btn-secondary" onclick="limpiarFormulario()">➕ Crear otra rifa</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     MODAL — VER NÚMEROS
+════════════════════════════════════ -->
+<div class="modal-overlay" id="modalNumeros">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modalNombreRifa">Rifa</div>
+        <div class="modal-sub" id="modalIdRifa"></div>
+      </div>
+      <button class="modal-close" onclick="cerrarModal('modalNumeros')">✕</button>
     </div>
 
-  </div><!-- /main -->
-</div><!-- /panel -->
+    <div class="modal-stats">
+      <div class="modal-stat verde">
+        <div class="num" id="mnLibres">—</div>
+        <div class="lbl">Libres</div>
+      </div>
+      <div class="modal-stat amarillo">
+        <div class="num" id="mnReservados">—</div>
+        <div class="lbl">En proceso</div>
+      </div>
+      <div class="modal-stat rojo">
+        <div class="num" id="mnPagados">—</div>
+        <div class="lbl">Vendidos</div>
+      </div>
+    </div>
 
-<div class="toasts" id="toasts"></div>
+    <div class="grid-numeros-modal" id="gridModalNumeros"></div>
 
+    <div class="divider"></div>
+
+    <p style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text-secondary)">📋 Compradores</p>
+    <div id="listaCompradores">
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <p>Aún no hay reservas</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn-secondary" onclick="exportarCSV(_rifaActual,'pagado')">⬇ Pagados CSV</button>
+      <button class="btn-secondary" onclick="exportarCSV(_rifaActual,'reservado')">⬇ En proceso CSV</button>
+      <button class="btn-secondary" onclick="exportarCSV(_rifaActual,'todo')">⬇ Todo CSV</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     MODAL — EXTENDER LICENCIA
+════════════════════════════════════ -->
+<div class="modal-overlay modal-sm" id="modalExtender">
+  <div class="modal-card" style="max-width:360px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">⏱️ Extender licencia</div>
+        <div class="modal-sub" id="extenderNombre"></div>
+      </div>
+      <button class="modal-close" onclick="cerrarModal('modalExtender')">✕</button>
+    </div>
+
+    <div class="form-group" style="margin-bottom:20px">
+      <label>Días adicionales a agregar</label>
+      <select id="diasExtender" class="input">
+        <option value="7">7 días</option>
+        <option value="15">15 días</option>
+        <option value="30" selected>30 días</option>
+        <option value="45">45 días</option>
+        <option value="60">60 días</option>
+      </select>
+    </div>
+
+    <div style="display:flex;gap:10px">
+      <button class="btn-primary" onclick="confirmarExtender()">✅ Confirmar</button>
+      <button class="btn-secondary" onclick="cerrarModal('modalExtender')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════ -->
 <script type="module">
-import { initializeApp } from
-  "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, doc,
-         onSnapshot, setDoc, deleteDoc, getDoc, getDocs }
+import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, getDocs,
+         collection, onSnapshot, updateDoc, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const ADMIN_PASS     = "Aurea123";
-const PRECIO_DEFAULT = 10000;
-const UNA_HORA       = 60 * 60 * 1000;
-const MS_DIA         = 24 * 60 * 60 * 1000;
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey:            "AIzaSyA4auC2caQVgCXvRnCMabDr2k8WVvCTzBw",
-  authDomain:        "rifas-online-d0bae.firebaseapp.com",
-  projectId:         "rifas-online-d0bae",
-  storageBucket:     "rifas-online-d0bae.firebasestorage.app",
+  apiKey: "AIzaSyA4auC2caQVgCXvRnCMabDr2k8WVvCTzBw",
+  authDomain: "rifas-online-d0bae.firebaseapp.com",
+  projectId: "rifas-online-d0bae",
+  storageBucket: "rifas-online-d0bae.firebasestorage.app",
   messagingSenderId: "905341315838",
-  appId:             "1:905341315838:web:6b2d6321af6797643f93af"
+  appId: "1:905341315838:web:6b2d6321af6797643f93af"
 };
-const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
 
-let rifaData   = {};
-let configData = {};
-let filtro     = "all";
-let unsub=null, unsubCfg=null;
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+const auth = getAuth(app);
 
-// ── LOGIN ──────────────────────────────────
-window.login = () => {
-  const pass = document.getElementById("passInput").value.trim();
-  const err  = document.getElementById("lerr");
-  err.textContent = "";
-  if (!pass) { err.textContent = "Ingresa la contraseña"; return; }
-  if (pass !== ADMIN_PASS) {
-    err.textContent = "❌ Contraseña incorrecta";
-    document.getElementById("passInput").value = "";
+// ── Estado global ──
+let _todasRifas    = [];
+let _rifaActual    = null;
+let _rifaExtender  = null;
+window._rifaActual = null;
+
+// ════════════════════════════════════
+// AUTH
+// ════════════════════════════════════
+onAuthStateChanged(auth, user => {
+  if (user) {
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("adminPanel").style.display  = "block";
+    document.getElementById("adminEmail").textContent = user.email;
+    cargarDashboard();
+    cargarLicencias();
+  } else {
+    document.getElementById("loginScreen").style.display = "flex";
+    document.getElementById("adminPanel").style.display  = "none";
+  }
+});
+
+window.hacerLogin = async function() {
+  const email = document.getElementById("loginEmail").value.trim();
+  const pass  = document.getElementById("loginPass").value;
+  const btn   = document.getElementById("btnLogin");
+  const err   = document.getElementById("loginError");
+
+  if (!email || !pass) { mostrarErrorLogin("Completa email y contraseña"); return; }
+
+  btn.disabled = true; btn.textContent = "Ingresando...";
+  err.style.display = "none";
+
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    mostrarErrorLogin("Credenciales incorrectas. Verifica tu email y contraseña.");
+    btn.disabled = false; btn.textContent = "Iniciar sesión";
+  }
+};
+
+function mostrarErrorLogin(msg) {
+  const err = document.getElementById("loginError");
+  err.textContent = "❌ " + msg;
+  err.style.display = "block";
+}
+
+// Enter en login
+document.getElementById("loginPass").addEventListener("keydown", e => {
+  if (e.key === "Enter") window.hacerLogin();
+});
+
+window.cerrarSesion = async function() {
+  await signOut(auth);
+};
+
+// ════════════════════════════════════
+// NAVEGACIÓN
+// ════════════════════════════════════
+window.cambiarSeccion = function(id, btn) {
+  document.querySelectorAll(".seccion").forEach(s => s.classList.remove("activa"));
+  document.querySelectorAll(".nav-item,.mobile-tab").forEach(n => n.classList.remove("active"));
+  document.getElementById("sec-" + id).classList.add("activa");
+  if (btn) btn.classList.add("active");
+  // Sync sidebar y mobile tabs
+  const navEl = document.getElementById("nav-" + id);
+  if (navEl) navEl.classList.add("active");
+};
+
+// ════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════
+async function cargarDashboard() {
+  const hoy = new Date().toLocaleDateString("es-CO",
+    { weekday:"long", day:"numeric", month:"long", year:"numeric" });
+  document.getElementById("dashFecha").textContent = "Hoy es " + hoy;
+
+  try {
+    const rifasSnap = await getDocs(collection(db, "rifas"));
+    let activas = 0, congeladas = 0, vencidas = 0, vendidos = 0;
+    const porVencer = [];
+
+    rifasSnap.forEach(d => {
+      const data = d.data();
+      const vence = data.fechaVencimiento?.toDate?.() || new Date(data.fechaVencimiento);
+      const dias  = Math.max(0, Math.floor((vence - new Date()) / 86400000));
+
+      if (data.estado === "activa") {
+        activas++;
+        if (dias <= 5) porVencer.push({ rifaId: d.id, ...data, diasRestantes: dias });
+      }
+      if (data.estado === "congelada") congeladas++;
+      if (new Date() > vence && data.estado !== "cerrada") vencidas++;
+    });
+
+    document.getElementById("kpiActivas").textContent    = activas;
+    document.getElementById("kpiCongeladas").textContent = congeladas;
+    document.getElementById("kpiVencidas").textContent   = vencidas;
+
+    // Alertas
+    if (porVencer.length > 0) {
+      document.getElementById("alertasVencer").style.display = "block";
+      document.getElementById("badgeVencer").style.display   = "inline";
+      document.getElementById("badgeVencer").textContent     = porVencer.length;
+      const lista = document.getElementById("listaAlertas");
+      lista.innerHTML = porVencer.map(r => `
+        <div class="alerta-chip">
+          <div class="alerta-chip-info">
+            <div class="alerta-chip-nombre">${r.clienteNombre}</div>
+            <div class="alerta-chip-dias">⏰ Vence en ${r.diasRestantes} día(s) — ${r.rifaId}</div>
+          </div>
+          <button class="btn-sm verde" onclick="abrirExtender('${r.rifaId}','${r.clienteNombre}')">
+            ⏱ Extender
+          </button>
+        </div>
+      `).join("");
+    }
+
+    // Contar vendidos en todas las rifas
+    let totalVendidos = 0;
+    for (const d of rifasSnap.docs) {
+      const nums = await getDocs(collection(db, "rifas", d.id, "numeros"));
+      nums.forEach(n => { if (n.data().estado === "pagado") totalVendidos++; });
+    }
+    document.getElementById("kpiVendidos").textContent = totalVendidos;
+
+  } catch(e) {
+    console.error("Error dashboard:", e);
+  }
+
+  document.getElementById("dashSpinner").style.display = "none";
+}
+
+// ════════════════════════════════════
+// LICENCIAS
+// ════════════════════════════════════
+window.cargarLicencias = async function() {
+  document.getElementById("licenciasSpinner").style.display = "block";
+  document.getElementById("listaLicencias").innerHTML = "";
+
+  try {
+    const snap = await getDocs(collection(db, "rifas"));
+    _todasRifas = [];
+    snap.forEach(d => _todasRifas.push({ rifaId: d.id, ...d.data() }));
+    _todasRifas.sort((a,b) => (b.fechaCreacion?.seconds||0) - (a.fechaCreacion?.seconds||0));
+    renderizarLicencias(_todasRifas);
+  } catch(e) {
+    mostrarToast("❌ Error al cargar licencias: " + e.message, "error");
+  }
+
+  document.getElementById("licenciasSpinner").style.display = "none";
+};
+
+function renderizarLicencias(rifas) {
+  const c = document.getElementById("listaLicencias");
+  if (!rifas.length) {
+    c.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>No hay talonarios creados aún</p></div>`;
     return;
   }
-  const btn = document.getElementById("btnLogin");
-  btn.disabled = true; btn.textContent = "Conectando...";
-  document.getElementById("loginWrap").style.display = "none";
-  document.getElementById("panel").style.display     = "block";
-  iniciar();
-};
 
-window.logout = () => {
-  if (unsub)    unsub();
-  if (unsubCfg) unsubCfg();
-  document.getElementById("panel").style.display     = "none";
-  document.getElementById("loginWrap").style.display = "flex";
-  document.getElementById("btnLogin").disabled        = false;
-  document.getElementById("btnLogin").textContent     = "Entrar al panel";
-  document.getElementById("passInput").value = "";
-};
+  c.innerHTML = rifas.map(r => {
+    const vence    = r.fechaVencimiento?.toDate?.() || new Date(r.fechaVencimiento);
+    const inicio   = r.fechaCreacion?.toDate?.()    || new Date(r.fechaCreacion);
+    const ahora    = new Date();
+    const dias     = Math.max(0, Math.floor((vence - ahora) / 86400000));
+    const total    = vence - inicio;
+    const usado    = ahora - inicio;
+    const pct      = Math.min(100, Math.max(0, (usado / total) * 100));
+    const colorBar = pct < 50 ? "#22c55e" : pct < 80 ? "#f59e0b" : "#ef4444";
 
-// ── INIT ────────────────────────────────────
-function iniciar() {
-  unsub = onSnapshot(collection(db,"rifa"),
-    snap => {
-      rifaData={};
-      snap.forEach(d=>{rifaData[d.id]=d.data();});
-      actualizarStats(); renderGrid(); renderProceso();
-      setConn(true);
-    },
-    ()=>setConn(false)
-  );
-  unsubCfg = onSnapshot(doc(db,"config","rifa"), snap=>{
-    configData = snap.exists() ? snap.data() : {};
-    cargarFormEditor(configData);
-  });
-}
+    let estadoBadge = r.estado || "activa";
+    let estadoLabel = { activa:"✅ Activa", congelada:"⏸️ Congelada", cerrada:"🔒 Cerrada", vencida:"⏰ Vencida" }[estadoBadge] || estadoBadge;
+    if (ahora > vence && estadoBadge === "activa") { estadoBadge = "vencida"; estadoLabel = "⏰ Vencida"; }
+    if (dias <= 5 && estadoBadge === "activa") estadoBadge = "por-vencer";
 
-// ── ESTADO ─────────────────────────────────
-function getEstado(k){
-  const d=rifaData[k];
-  if(!d) return "libre";
-  if(d.estado==="pagado") return "pagado";
-  if(d.estado==="reservado"){
-    if(Date.now()-d.tiempo>UNA_HORA) return "libre";
-    return "reservado";
-  }
-  return "libre";
-}
+    const claseCard = estadoBadge === "congelada" ? "congelada"
+                    : estadoBadge === "vencida"   ? "vencida"
+                    : dias <= 5                    ? "por-vencer" : "";
 
-// ── STATS ───────────────────────────────────
-function actualizarStats(){
-  let l=0,r=0,p=0;
-  for(let i=0;i<100;i++){
-    const e=getEstado(String(i).padStart(2,"0"));
-    if(e==="libre")l++;else if(e==="reservado")r++;else p++;
-  }
-  const v=(configData.valor||"$10.000").replace(/[^0-9]/g,"");
-  const precio=parseInt(v)||PRECIO_DEFAULT;
-  const pct=Math.round((p/100)*100);
-  document.getElementById("aL").textContent=l;
-  document.getElementById("aR").textContent=r;
-  document.getElementById("aP").textContent=p;
-  document.getElementById("aM").textContent="$"+(p*precio).toLocaleString("es-CO");
-  document.getElementById("aPct").textContent=pct+"%";
-  document.getElementById("aProg").style.width=pct+"%";
-  document.getElementById("aMeta").textContent=
-    `${p} vendidos · ${r} en proceso · ${l} disponibles`;
-}
+    const fechaStr = vence.toLocaleDateString("es-CO", { day:"2-digit", month:"short", year:"numeric" });
+    const toggleLabel = r.estado === "congelada" ? "▶️ Activar" : "⏸️ Congelar";
+    const toggleEstado = r.estado === "congelada" ? "activa" : "congelada";
 
-// ── GRID ─────────────────────────────────────
-window.renderGrid = function(){
-  const grid   = document.getElementById("aGrid");
-  const search = document.getElementById("sbx").value.toLowerCase().trim();
-  grid.innerHTML="";
-  const ahora=Date.now();
-  for(let i=0;i<100;i++){
-    const k=String(i).padStart(2,"0");
-    const st=getEstado(k);
-    const d=rifaData[k];
-    const nb=d?.nombre?.toLowerCase()||"";
-    if(filtro!=="all"&&filtro!==st) continue;
-    if(search&&!k.includes(search)&&!nb.includes(search)) continue;
-    let etiq="libre";
-    if(st==="reservado"){const ms=UNA_HORA-(ahora-d.tiempo);etiq=fmtMin(ms);}
-    else if(st==="pagado") etiq="vendido";
-    const card=document.createElement("button");
-    card.className=`nc ${st}`;
-    card.innerHTML=`<span class="n">${k}</span><span class="t">${etiq}</span>`;
-    card.addEventListener("click",()=>abrirDetalle(k));
-    grid.appendChild(card);
-  }
-  if(!grid.children.length)
-    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--txt3)">Sin resultados</div>';
-};
+    return `
+      <div class="licencia-card ${claseCard}" id="lic-${r.rifaId}">
+        <div class="lic-header">
+          <div>
+            <div class="lic-nombre">${r.clienteNombre || "Sin nombre"}</div>
+            <div class="lic-id">${r.rifaId}</div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-top:4px">
+              📋 ${r.nombre || "—"} &nbsp;·&nbsp; 💵 $${Number(r.precioNumero||0).toLocaleString("es-CO")}
+            </div>
+          </div>
+          <span class="badge ${estadoBadge}">${estadoLabel}</span>
+        </div>
 
-// ── DETALLE ──────────────────────────────────
-async function abrirDetalle(k){
-  const panel=document.getElementById("detPanel");
-  const d=rifaData[k];
-  const st=getEstado(k);
-  const cmap={
-    libre:    ["var(--gbg)","var(--green)","var(--gd)"],
-    reservado:["var(--ybg)","var(--yellow)","var(--yd)"],
-    pagado:   ["var(--rbg)","var(--red)","var(--rd)"]
-  };
-  const [bg,cl,brd]=cmap[st];
-  const ts=d?.tiempo?new Date(d.tiempo).toLocaleString("es-CO",{dateStyle:"long",timeStyle:"short"}):"";
-  let btns="";
-  if(st==="libre")    btns=`<button class="ba y" onclick="adminReservar('${k}')">Marcar en proceso</button>`;
-  if(st==="reservado") btns=`<button class="ba g" onclick="adminPagar('${k}')">✓ Confirmar pago</button><button class="ba r" onclick="adminLiberar('${k}')">Liberar</button>`;
-  if(st==="pagado")   btns=`<button class="ba gr" onclick="adminLiberar('${k}')">♻ Reversar</button>`;
-  panel.innerHTML=`
-    <div class="dp-h">
-      <div class="dp-badge" style="background:${bg};color:${cl};border:2px solid ${brd}">${k}</div>
-      <div class="dp-i">
-        <div class="dp-name">${d?.nombre||(st==="libre"?"Número libre":"Sin nombre")}</div>
-        <div class="dp-c">${d?.whatsapp?"📱 "+d.whatsapp:""}</div>
-        <div class="dp-ts">${ts}</div>
-      </div>
-      <button class="ba cl" onclick="cerrarDetalle()">✕</button>
-    </div>
-    <div class="dp-btns">${btns}</div>
-  `;
-  panel.classList.add("show");
-  panel.scrollIntoView({behavior:"smooth",block:"nearest"});
-}
-window.cerrarDetalle=()=>{document.getElementById("detPanel").classList.remove("show");};
+        <div class="lic-barra-wrap">
+          <div class="lic-barra-label">
+            <span>Vence en <strong>${dias} día(s)</strong></span>
+            <span>${fechaStr}</span>
+          </div>
+          <div class="lic-barra-track">
+            <div class="lic-barra-fill" style="width:${pct}%;background:${colorBar}"></div>
+          </div>
+        </div>
 
-// ── ACCIONES ─────────────────────────────────
-window.adminPagar = async k=>{
-  const d=rifaData[k];
-  const nombre   = d?.nombre   || "cliente";
-  const whatsapp = d?.whatsapp || "";
-  const fecha    = configData.fecha || "el día del sorteo";
-  try{
-    await setDoc(doc(db,"rifa",k),{
-      estado:"pagado",nombre:d?.nombre||"",whatsapp,tiempo:Date.now()
-    });
-    toast(`N° ${k} pagado ✓`,"ok");
-    cerrarDetalle();
-    // Enviar mensaje de confirmación al cliente
-    if(whatsapp && whatsapp.length>=7){
-      const num=whatsapp.replace(/[^0-9]/g,"");
-      const msg=encodeURIComponent(
-        `✅ *¡Pago confirmado, ${nombre}!*\n\n`+
-        `Tu número *${k}* quedó registrado para la rifa del ${fecha}.\n\n`+
-        `🎟️ ¡Mucha suerte y gracias por tu apoyo!\n`+
-        `📅 Recuerda seguir el resultado el día del sorteo.`
-      );
-      setTimeout(()=>window.open(`https://wa.me/57${num}?text=${msg}`,"_blank"),800);
-    }
-  }catch(_){toast("Error al actualizar","err");}
-};
-
-window.adminLiberar=async k=>{
-  try{
-    await deleteDoc(doc(db,"rifa",k));
-    toast(`N° ${k} liberado`,"warn"); cerrarDetalle();
-  }catch(_){toast("Error al liberar","err");}
-};
-
-window.adminReservar=async k=>{
-  const nombre=prompt(`Reservar N° ${k}\nNombre del comprador:`);
-  if(!nombre) return;
-  const wapp=prompt("WhatsApp del comprador:");
-  if(!wapp) return;
-  try{
-    await setDoc(doc(db,"rifa",k),{
-      estado:"reservado",nombre:nombre.trim(),whatsapp:wapp.trim(),tiempo:Date.now()
-    });
-    toast(`N° ${k} reservado para ${nombre}`,"ok"); cerrarDetalle();
-  }catch(_){toast("Error","err");}
-};
-
-// ── EN PROCESO ────────────────────────────────
-function renderProceso(){
-  const list=document.getElementById("resList");
-  const ahora=Date.now();
-  const items=[];
-  for(let i=0;i<100;i++){
-    const k=String(i).padStart(2,"0");
-    const d=rifaData[k];
-    if(d&&d.estado==="reservado"&&ahora-d.tiempo<=UNA_HORA) items.push({k,...d});
-  }
-  items.sort((a,b)=>(a.tiempo||0)-(b.tiempo||0));
-  if(!items.length){list.innerHTML='<div class="empty">Sin números en proceso ✓</div>';return;}
-  list.innerHTML="";
-  items.forEach(({k,nombre,whatsapp,tiempo})=>{
-    const ts=tiempo?new Date(tiempo).toLocaleString("es-CO",{dateStyle:"short",timeStyle:"short"}):"—";
-    const rest=UNA_HORA-(ahora-tiempo);
-    const el=document.createElement("div");
-    el.className="ri";
-    el.innerHTML=`
-      <div class="rn">${k}</div>
-      <div class="ri-i">
-        <div class="ri-name">${nombre||"Sin nombre"}</div>
-        <div class="ri-c">📱 ${whatsapp||"—"}</div>
-        <div class="ri-ts">${ts} · Expira en ${fmtMin(rest)}</div>
-      </div>
-      <div style="display:flex;gap:5px">
-        <button class="rb ok">✓ Pagado</button>
-        <button class="rb dl">Liberar</button>
+        <div class="lic-acciones">
+          <button class="btn-sm" onclick="verNumeros('${r.rifaId}','${r.nombre||r.rifaId}')">
+            📊 Ver números
+          </button>
+          <button class="btn-sm" onclick="abrirExtender('${r.rifaId}','${r.clienteNombre||r.rifaId}')">
+            ⏱ Extender
+          </button>
+          <button class="btn-sm" onclick="toggleRifa('${r.rifaId}','${toggleEstado}')">
+            ${toggleLabel}
+          </button>
+          <button class="btn-sm" onclick="copiarLink('${r.rifaId}')">
+            🔗 Link talonario
+          </button>
+          <button class="btn-sm" onclick="copiarLinkAdmin('${r.rifaId}')">
+            🔑 Link admin
+          </button>
+          <button class="btn-sm" onclick="compartirWhatsApp('${r.rifaId}','${r.clienteNombre||""}','${r.claveAdmin||""}')">
+            📲 Enviar a cliente
+          </button>
+        </div>
       </div>
     `;
-    el.querySelector(".rb.ok").addEventListener("click",()=>adminPagar(k));
-    el.querySelector(".rb.dl").addEventListener("click",()=>adminLiberar(k));
-    list.appendChild(el);
-  });
+  }).join("");
 }
 
-// ── EDITOR ────────────────────────────────────
-function cargarFormEditor(c){
-  const s=(id,v)=>{const e=document.getElementById(id);if(e&&v!==undefined)e.value=v;};
-  s("eBadge",    c.badge);   s("eTitulo",  c.titulo);
-  s("eSub",      c.sub);     s("eP1",      c.p1||c.premio1);
-  s("eP2",       c.p2||c.premio2); s("eValor",c.valor);
-  s("eFecha",    c.fecha);   s("eWaAdmin", c.waAdmin);
-  s("eCausa",    c.causa);   s("eCausaSub",c.causaSub);
-  s("eFoto1",    c.foto1);   s("eFoto2",   c.foto2);
-  // Mostrar nequi actual en el campo readonly
-  if(c.nequi){
-    const nd=document.getElementById("eNequiDisplay");
-    const ni=document.getElementById("eNequiInput");
-    if(nd) nd.textContent=c.nequi;
-    if(ni) ni.value=c.nequi;
-  }
-  // Preview
-  if(c.badge)  document.getElementById("prevBadge").textContent=c.badge;
-  if(c.titulo) document.getElementById("prevTitulo").innerHTML=c.titulo;
-  if(c.sub)    document.getElementById("prevSub").textContent=c.sub;
-  if(c.p1||c.premio1) document.getElementById("prevP1").textContent=(c.p1||c.premio1);
-  if(c.p2||c.premio2) document.getElementById("prevP2").textContent=(c.p2||c.premio2);
-  if(c.valor)  document.getElementById("prevValor").textContent=c.valor;
-}
-
-window.actualizarNequiPreview = v=>{
-  if(!v.trim()) return;
-  const nd=document.getElementById("eNequiDisplay");
-  if(nd) nd.textContent=v;
+window.filtrarLicencias = function() {
+  const q = document.getElementById("buscarLicencia").value.toLowerCase();
+  const filtradas = _todasRifas.filter(r =>
+    (r.clienteNombre||"").toLowerCase().includes(q) ||
+    (r.rifaId||"").toLowerCase().includes(q) ||
+    (r.nombre||"").toLowerCase().includes(q)
+  );
+  renderizarLicencias(filtradas);
 };
 
-window.guardarConfig=async()=>{
-  const g=id=>document.getElementById(id)?.value.trim()||"";
-  // Nequi: usa el campo editar si tiene valor, si no usa el actual
-  const nequiNuevo = g("eNequiEditar");
-  const nequiActual = document.getElementById("eNequiInput")?.value || "";
-  const cfg={
-    badge:    g("eBadge"),    titulo:   g("eTitulo"),
-    sub:      g("eSub"),      p1:       g("eP1"),
-    premio1:  g("eP1"),       p2:       g("eP2"),
-    premio2:  g("eP2"),       valor:    g("eValor"),
-    fecha:    g("eFecha"),    waAdmin:  g("eWaAdmin"),
-    nequi:    nequiNuevo || nequiActual,
-    causa:    g("eCausa"),    causaSub: g("eCausaSub"),
-    foto1:    g("eFoto1"),    foto2:    g("eFoto2"),
-    updatedAt:Date.now()
-  };
-  const btn=document.getElementById("btnSave");
-  btn.disabled=true; btn.textContent="Guardando...";
-  try{
-    await setDoc(doc(db,"config","rifa"),cfg);
-    // Actualizar preview nequi con el nuevo valor
-    const nd=document.getElementById("eNequiDisplay");
-    const ni=document.getElementById("eNequiInput");
-    if(nd) nd.textContent=cfg.nequi;
-    if(ni) ni.value=cfg.nequi;
-    document.getElementById("eNequiEditar").value="";
-    toast("✓ Cambios publicados en tiempo real","ok");
-  }catch(e){
-    console.error(e);
-    toast("Error: revisa permisos de Firestore","err");
-  }
-  btn.disabled=false; btn.textContent="💾 Guardar y publicar todos los cambios";
-};
-
-// ── COPIAR NEQUI ──────────────────────────────
-window.copiarCampo=(inputId,displayId)=>{
-  const display=document.getElementById(displayId);
-  const txt=display?display.textContent.trim():"";
-  if(navigator.clipboard){
-    navigator.clipboard.writeText(txt).then(()=>{
-      toast("✓ Número copiado: "+txt,"ok",2000);
-    });
-  } else {
-    const range=document.createRange();
-    range.selectNodeContents(display);
-    window.getSelection().removeAllRanges();
-    window.getSelection().addRange(range);
-    toast("Seleccionado — usa Ctrl+C para copiar","ok",2000);
-  }
-};
-
-// ── LICENCIAS ────────────────────────────────
-window.crearLicencia=async()=>{
-  const id    =document.getElementById("licId").value.trim();
-  const wa    =document.getElementById("licWa").value.trim();
-  const dias  =parseInt(document.getElementById("licDias").value)||30;
-  const nombre=document.getElementById("licNombre").value.trim();
-  if(!id||!wa){toast("Completa ID y WhatsApp","warn");return;}
-  const vence = Date.now() + (dias * MS_DIA);
-  try{
-    await setDoc(doc(db,"licencias",id),{
-      activa:true, waAdmin:wa, nombre,
-      creado:Date.now(), vence, dias
-    });
-    toast(`Licencia "${id}" creada por ${dias} días ✓`,"ok");
-    document.getElementById("licId").value="";
-    document.getElementById("licWa").value="";
-    document.getElementById("licNombre").value="";
+// ════════════════════════════════════
+// ACCIONES DE RIFA
+// ════════════════════════════════════
+window.toggleRifa = async function(rifaId, nuevoEstado) {
+  try {
+    await updateDoc(doc(db, "rifas", rifaId),      { estado: nuevoEstado });
+    await updateDoc(doc(db, "licencias", rifaId),  { estado: nuevoEstado });
+    mostrarToast(nuevoEstado === "congelada" ? "⏸️ Talonario congelado" : "✅ Talonario activado");
     cargarLicencias();
-  }catch(e){toast("Error al crear licencia","err");}
+  } catch(e) {
+    mostrarToast("❌ Error: " + e.message, "error");
+  }
 };
 
-async function cargarLicencias(){
-  const list=document.getElementById("licList");
-  try{
-    const snap=await getDocs(collection(db,"licencias"));
-    if(snap.empty){list.innerHTML='<div class="empty">Sin licencias creadas</div>';return;}
-    list.innerHTML="";
-    const ahora=Date.now();
-    snap.forEach(d=>{
-      const lic=d.data();
-      const vencido=lic.vence && ahora>lic.vence;
-      const restante=lic.vence ? Math.max(0,Math.ceil((lic.vence-ahora)/MS_DIA)) : "∞";
-      const estado=!lic.activa?"Suspendida":vencido?"Vencida":`Activa · ${restante} días restantes`;
-      const color=!lic.activa||vencido?"var(--red)":"var(--green)";
-      const icon=!lic.activa||vencido?"🔴":"🟢";
-      const el=document.createElement("div");
-      el.className="lic-card";
-      el.innerHTML=`
-        <div class="lic-badge" style="background:var(--s3)">${icon}</div>
-        <div class="lic-info">
-          <div class="lic-id">${d.id}</div>
-          <div class="lic-meta">${lic.nombre||""} · 📱 ${lic.waAdmin||""}</div>
-          <div class="lic-meta" style="color:${color}">${estado}</div>
-        </div>
-        <div class="lic-btns">
-          ${lic.activa&&!vencido
-            ?`<button class="lb sus" data-id="${d.id}">Suspender</button>`
-            :`<button class="lb act" data-id="${d.id}">Activar</button>`}
-          <button class="lb ren" data-id="${d.id}" data-dias="${lic.dias||30}">+${lic.dias||30}d</button>
-          <button class="lb del" data-id="${d.id}">Eliminar</button>
-        </div>
-      `;
-      el.querySelector(".lb.sus,.lb.act")?.addEventListener("click",async e=>{
-        const licRef=doc(db,"licencias",e.target.dataset.id);
-        const s=await getDoc(licRef);
-        if(s.exists()) await setDoc(licRef,{...s.data(),activa:!s.data().activa});
-        cargarLicencias(); toast("Estado actualizado","ok");
-      });
-      el.querySelector(".lb.ren")?.addEventListener("click",async e=>{
-        const licRef=doc(db,"licencias",e.target.dataset.id);
-        const s=await getDoc(licRef); if(!s.exists()) return;
-        const d2=s.data();
-        const base=Math.max(Date.now(),d2.vence||Date.now());
-        const dias=parseInt(e.target.dataset.dias)||30;
-        await setDoc(licRef,{...d2,activa:true,vence:base+(dias*MS_DIA)});
-        cargarLicencias(); toast(`Renovada +${dias} días ✓`,"ok");
-      });
-      el.querySelector(".lb.del")?.addEventListener("click",async e=>{
-        if(!confirm("¿Eliminar esta licencia?")) return;
-        await deleteDoc(doc(db,"licencias",e.target.dataset.id));
-        cargarLicencias(); toast("Licencia eliminada","warn");
-      });
-      list.appendChild(el);
+// Extender
+window.abrirExtender = function(rifaId, nombre) {
+  _rifaExtender = rifaId;
+  document.getElementById("extenderNombre").textContent = nombre + " · " + rifaId;
+  document.getElementById("modalExtender").classList.add("open");
+};
+
+window.confirmarExtender = async function() {
+  const dias = parseInt(document.getElementById("diasExtender").value);
+  if (!_rifaExtender || !dias) return;
+
+  try {
+    const snap = await getDoc(doc(db, "rifas", _rifaExtender));
+    const venc = snap.data().fechaVencimiento?.toDate?.() || new Date();
+    venc.setDate(venc.getDate() + dias);
+
+    await updateDoc(doc(db, "rifas", _rifaExtender),     { fechaVencimiento: venc, estado: "activa" });
+    await updateDoc(doc(db, "licencias", _rifaExtender), { fechaVencimiento: venc, estado: "activa" });
+
+    mostrarToast(`✅ Licencia extendida ${dias} días`);
+    cerrarModal("modalExtender");
+    cargarLicencias();
+  } catch(e) {
+    mostrarToast("❌ Error: " + e.message, "error");
+  }
+};
+
+// Ver números
+window.verNumeros = async function(rifaId, nombre) {
+  _rifaActual = rifaId;
+  window._rifaActual = rifaId;
+  document.getElementById("modalNombreRifa").textContent = nombre;
+  document.getElementById("modalIdRifa").textContent     = rifaId;
+  document.getElementById("modalNumeros").classList.add("open");
+
+  const grid    = document.getElementById("gridModalNumeros");
+  const lista   = document.getElementById("listaCompradores");
+  grid.innerHTML  = '<div style="grid-column:1/-1;text-align:center;padding:16px"><div class="spinner" style="margin:0 auto"></div></div>';
+  lista.innerHTML = "";
+
+  try {
+    const snap = await getDocs(collection(db, "rifas", rifaId, "numeros"));
+    let libres = 0, reservados = 0, pagados = 0;
+    const compradores = [];
+    const numerosData = {};
+
+    snap.forEach(d => {
+      const data = d.data();
+      numerosData[d.id] = data;
+      if (data.estado === "libre")     libres++;
+      if (data.estado === "reservado") reservados++;
+      if (data.estado === "pagado")    pagados++;
+      if (data.estado !== "libre") compradores.push({ num: d.id, ...data });
     });
-  }catch(e){list.innerHTML='<div class="empty">Error al cargar licencias</div>';}
-}
 
-// ── TABS ──────────────────────────────────────
-window.setTab=(tab,el)=>{
-  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("act"));
-  el.classList.add("act");
-  document.getElementById("tNumeros").style.display  =tab==="numeros"  ?"block":"none";
-  document.getElementById("tProceso").style.display  =tab==="proceso"  ?"block":"none";
-  document.getElementById("tEditor").style.display   =tab==="editor"   ?"block":"none";
-  document.getElementById("tLicencias").style.display=tab==="licencias"?"block":"none";
-  if(tab==="licencias") cargarLicencias();
-};
+    document.getElementById("mnLibres").textContent    = libres;
+    document.getElementById("mnReservados").textContent = reservados;
+    document.getElementById("mnPagados").textContent    = pagados;
 
-// ── FILTROS ───────────────────────────────────
-window.setF=(f,btn,cls)=>{
-  filtro=f;
-  document.querySelectorAll(".fb").forEach(b=>{b.className="fb";if(b===btn)b.classList.add(cls);});
-  renderGrid();
-};
+    // Grid visual
+    grid.innerHTML = "";
+    for (let i = 0; i < 100; i++) {
+      const n    = i.toString().padStart(2,"0");
+      const dato = numerosData[n] || { estado: "libre" };
+      const chip = document.createElement("div");
+      chip.className   = "num-chip " + dato.estado;
+      chip.textContent = n;
+      chip.title       = dato.estado !== "libre" ? `${dato.estado} — ${dato.nombre||""}` : "Libre";
+      grid.appendChild(chip);
+    }
 
-// ── EXPORT CSV ────────────────────────────────
-window.exportCSV=(tipo)=>{
-  const rows=[["Numero","Estado","Nombre","WhatsApp","Fecha"]];
-  for(let i=0;i<100;i++){
-    const k=String(i).padStart(2,"0");
-    const d=rifaData[k]; const st=getEstado(k);
-    if(tipo!=="todo"&&st!==tipo) continue;
-    const ts=d?.tiempo?new Date(d.tiempo).toLocaleString("es-CO"):"";
-    rows.push([k,st,d?.nombre||"",d?.whatsapp||"",ts]);
+    // Lista compradores
+    compradores.sort((a,b) => {
+      if (a.estado === "pagado" && b.estado !== "pagado") return -1;
+      if (b.estado === "pagado" && a.estado !== "pagado") return  1;
+      return (b.tiempo?.seconds||0) - (a.tiempo?.seconds||0);
+    });
+
+    if (compradores.length === 0) {
+      lista.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>Sin reservas aún</p></div>`;
+    } else {
+      lista.innerHTML = compradores.map(c => `
+        <div class="comprador-row ${c.estado}">
+          <div class="comprador-num">${c.num}</div>
+          <div class="comprador-info">
+            <div class="comprador-nombre">${c.nombre||"Sin nombre"}</div>
+            <div class="comprador-tel">📱 ${c.telefono||"—"}</div>
+          </div>
+          <span class="badge ${c.estado === "pagado" ? "activa" : "por-vencer"}">
+            ${c.estado === "pagado" ? "✅ Pagado" : "⏳ En proceso"}
+          </span>
+        </div>
+      `).join("");
+    }
+
+  } catch(e) {
+    mostrarToast("❌ Error: " + e.message, "error");
   }
-  descargar(rows,`rifa_${tipo}_${hoy()}.csv`);
-  toast("CSV exportado","inf");
 };
 
-window.exportTalonario=()=>{
-  const rows=[["Numero","Estado","Nombre","WhatsApp","Fecha reserva"]];
-  let l=0,r=0,p=0;
-  for(let i=0;i<100;i++){
-    const k=String(i).padStart(2,"0");
-    const d=rifaData[k]; const st=getEstado(k);
-    if(st==="libre") l++;
-    else if(st==="reservado") r++;
-    else p++;
-    const ts=d?.tiempo?new Date(d.tiempo).toLocaleString("es-CO"):"";
-    const etiq=st==="libre"?"Disponible":st==="reservado"?"En proceso":"Vendido";
-    rows.push([k,etiq,d?.nombre||"",d?.whatsapp||"",ts]);
+// Copiar links
+window.copiarLink = function(rifaId) {
+  const url = `${location.origin}/r/${rifaId}`;
+  navigator.clipboard.writeText(url);
+  mostrarToast("🔗 Link del talonario copiado");
+};
+
+window.copiarLinkAdmin = function(rifaId) {
+  const url = `${location.origin}/miadmin.html?id=${rifaId}`;
+  navigator.clipboard.writeText(url);
+  mostrarToast("🔑 Link del mini-admin copiado");
+};
+
+window.copiarTexto = function(idEl, msg) {
+  const txt = document.getElementById(idEl).textContent;
+  navigator.clipboard.writeText(txt);
+  mostrarToast(msg);
+};
+
+// Compartir por WhatsApp al cliente
+window.compartirWhatsApp = function(rifaId, nombreCliente, claveAdmin) {
+  const linkTalonario = `${location.origin}/r/${rifaId}`;
+  const linkAdmin     = `${location.origin}/miadmin.html?id=${rifaId}`;
+  const msg =
+`🎟️ *RIFA PRO FONDOS*
+Hola ${nombreCliente}, aquí están los links de tu talonario:
+
+*🎯 Link del talonario* (para tus compradores):
+${linkTalonario}
+
+*🔐 Link de tu panel admin:*
+${linkAdmin}
+*Contraseña:* ${claveAdmin}
+
+¡Comparte el primer link con tus compradores! 🚀`;
+
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
+};
+
+// ════════════════════════════════════
+// CREAR RIFA
+// ════════════════════════════════════
+window.crearRifa = async function() {
+  const btn = document.getElementById("btnCrear");
+  const err = document.getElementById("crearError");
+
+  const clienteNombre   = document.getElementById("fClienteNombre").value.trim();
+  const clienteWhatsApp = document.getElementById("fClienteWsp").value.trim().replace(/\D/g,"");
+  const claveAdmin      = document.getElementById("fClaveAdmin").value.trim();
+  const nombre          = document.getElementById("fNombre").value.trim();
+  const precioNumero    = parseInt(document.getElementById("fPrecio").value) || 0;
+  const metodoPago      = document.getElementById("fMetodoPago").value.trim() || "Nequi";
+  const nequiRaw        = document.getElementById("fNequi").value.trim();
+  const loteria         = document.getElementById("fLoteria").value.trim();
+  const fechaSorteo     = document.getElementById("fFechaSorteo").value;
+  const premio1         = document.getElementById("fPremio1").value.trim();
+  const premio2         = document.getElementById("fPremio2").value.trim();
+  const causa           = document.getElementById("fCausa").value.trim();
+  const diasLicencia    = parseInt(document.getElementById("fDiasLicencia").value);
+
+  err.style.display = "none";
+  document.getElementById("resultadoRifa").style.display = "none";
+
+  // Validaciones
+  if (!clienteNombre)   { mostrarErrorCrear("El nombre del cliente es requerido"); return; }
+  if (!clienteWhatsApp || clienteWhatsApp.length < 10) { mostrarErrorCrear("El WhatsApp del cliente es requerido (10 dígitos)"); return; }
+  if (!claveAdmin)      { mostrarErrorCrear("La contraseña del mini-admin es requerida"); return; }
+  if (!nombre)          { mostrarErrorCrear("El nombre de la rifa es requerido"); return; }
+  if (!precioNumero)    { mostrarErrorCrear("El precio por número es requerido"); return; }
+
+  btn.disabled = true;
+  btn.textContent = "⏳ Creando talonario...";
+
+  try {
+    // Generar rifaId
+    const rifaId = nombre.toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+      .replace(/[^a-z0-9\s]/g,"").trim()
+      .replace(/\s+/g,"-")
+      + "-" + new Date().getFullYear();
+
+    // Verificar que no exista
+    const existe = await getDoc(doc(db, "rifas", rifaId));
+    if (existe.exists()) {
+      mostrarErrorCrear(`Ya existe una rifa con ID "${rifaId}". Cambia el nombre.`);
+      btn.disabled = false; btn.textContent = "✅ Crear talonario completo";
+      return;
+    }
+
+    // Calcular vencimiento
+    const vencimiento = new Date();
+    vencimiento.setDate(vencimiento.getDate() + diasLicencia);
+
+    // Nequi array
+    const nequiArr = nequiRaw
+      ? nequiRaw.split(",").map(n => n.trim()).filter(Boolean)
+      : [];
+
+    const datosRifa = {
+      rifaId, clienteNombre, clienteWhatsApp, claveAdmin,
+      nombre, estado: "activa", cantidadNumeros: 100,
+      precioNumero, metodoPago, nequi: nequiArr,
+      loteria, fechaSorteo, premio1, premio2, causa,
+      fechaCreacion: serverTimestamp(),
+      fechaVencimiento: vencimiento, diasLicencia,
+      badge: "🎟️ Rifa Oficial",
+      titulo: nombre,
+      subtitulo: fechaSorteo ? "Juega el " + fechaSorteo : "",
+      fotoIzquierda: "", fotoDerecha: "",
+    };
+
+    // Crear documento principal
+    await setDoc(doc(db, "rifas", rifaId), datosRifa);
+
+    // Crear 100 números
+    const promesas = [];
+    for (let i = 0; i < 100; i++) {
+      const n = i.toString().padStart(2,"0");
+      promesas.push(setDoc(doc(db,"rifas",rifaId,"numeros",n), {
+        numero:n, estado:"libre", nombre:"", telefono:"", tiempo:null, aprobado:false
+      }));
+    }
+    await Promise.all(promesas);
+
+    // Registrar licencia
+    await setDoc(doc(db, "licencias", rifaId), {
+      rifaId, clienteNombre, clienteWhatsApp,
+      fechaCreacion: serverTimestamp(),
+      fechaVencimiento: vencimiento,
+      diasLicencia, estado: "activa",
+    });
+
+    // Mostrar resultado
+    const base = location.origin;
+    document.getElementById("linkTalonario").textContent = `${base}/r/${rifaId}`;
+    document.getElementById("linkAdmin").textContent     = `${base}/miadmin.html?id=${rifaId}`;
+    document.getElementById("linkClave").textContent     = claveAdmin;
+    document.getElementById("resultadoRifa").style.display = "block";
+
+    mostrarToast("🎉 Talonario creado exitosamente");
+    cargarLicencias();
+
+  } catch(e) {
+    mostrarErrorCrear("Error al crear: " + e.message);
   }
-  const v=(configData.valor||"$10.000").replace(/[^0-9]/g,"");
-  const precio=parseInt(v)||PRECIO_DEFAULT;
-  rows.push([]);
-  rows.push(["RESUMEN","","","",""]);
-  rows.push(["Disponibles",l,"","",""]);
-  rows.push(["En proceso",r,"","",""]);
-  rows.push(["Vendidos",p,"","",""]);
-  rows.push(["Recaudado","$"+(p*precio).toLocaleString("es-CO"),"","",""]);
-  rows.push(["Descargado el",new Date().toLocaleString("es-CO"),"","",""]);
-  descargar(rows,`talonario_completo_${hoy()}.csv`);
-  toast("Talonario exportado","inf");
+
+  btn.disabled = false;
+  btn.textContent = "✅ Crear talonario completo";
 };
 
-function descargar(rows,nombre){
-  const csv=rows.map(r=>r.map(v=>`"${v}"`).join(",")).join("\n");
-  const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");
-  a.href=url;a.download=nombre;a.click();
-  URL.revokeObjectURL(url);
+function mostrarErrorCrear(msg) {
+  const err = document.getElementById("crearError");
+  err.textContent = "❌ " + msg;
+  err.style.display = "block";
 }
 
-// ── UTILS ─────────────────────────────────────
-function hoy(){return new Date().toISOString().slice(0,10);}
-function fmtMin(ms){
-  if(ms<=0) return "libre";
-  const m=Math.floor(ms/60000);
-  return m>0?`${m}m`:`${Math.floor(ms/1000)}s`;
+window.limpiarFormulario = function() {
+  ["fClienteNombre","fClienteWsp","fClaveAdmin","fNombre","fPrecio",
+   "fMetodoPago","fNequi","fLoteria","fFechaSorteo","fPremio1","fPremio2","fCausa"]
+    .forEach(id => { const el = document.getElementById(id); if(el) el.value = ""; });
+  document.getElementById("resultadoRifa").style.display = "none";
+  document.getElementById("crearError").style.display   = "none";
+};
+
+// ════════════════════════════════════
+// EXPORTAR CSV
+// ════════════════════════════════════
+window.exportarCSV = async function(rifaId, tipo) {
+  if (!rifaId) return;
+  try {
+    const snap = await getDocs(collection(db, "rifas", rifaId, "numeros"));
+    const filas = [["Número","Estado","Nombre","Teléfono","Tiempo"]];
+    snap.forEach(d => {
+      const data = d.data();
+      if (data.estado === "libre") return;
+      if (tipo !== "todo" && data.estado !== tipo) return;
+      const tiempo = data.tiempo?.toDate?.()?.toLocaleString("es-CO") || "";
+      filas.push([d.id, data.estado, data.nombre||"", data.telefono||"", tiempo]);
+    });
+    const csv  = filas.map(f => f.map(v => `"${v}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type:"text/csv;charset=utf-8;" });
+    const a    = Object.assign(document.createElement("a"), {
+      href: URL.createObjectURL(blob),
+      download: `${rifaId}-${tipo}-${Date.now()}.csv`
+    });
+    a.click();
+    mostrarToast("⬇ CSV exportado");
+  } catch(e) {
+    mostrarToast("❌ Error exportando: " + e.message, "error");
+  }
+};
+
+// ════════════════════════════════════
+// MODALES
+// ════════════════════════════════════
+window.cerrarModal = function(id) {
+  document.getElementById(id).classList.remove("open");
+};
+
+document.querySelectorAll(".modal-overlay").forEach(m => {
+  m.addEventListener("click", function(e) {
+    if (e.target === this) this.classList.remove("open");
+  });
+});
+
+// ════════════════════════════════════
+// TOAST
+// ════════════════════════════════════
+function mostrarToast(msg, tipo="success") {
+  document.querySelectorAll(".toast").forEach(t => t.remove());
+  const colores = { success:"#22c55e", error:"#ef4444", warning:"#f59e0b", info:"#6366f1" };
+  const t = document.createElement("div");
+  t.className = "toast";
+  t.style.borderLeftColor = colores[tipo] || colores.info;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
 }
-function setConn(ok){
-  document.getElementById("cDot").style.background=ok?"var(--green)":"var(--red)";
-  document.getElementById("cDot").style.boxShadow=ok?"0 0 6px var(--green)":"0 0 6px var(--red)";
-  document.getElementById("cTxt").style.color=ok?"var(--green)":"var(--red)";
-  document.getElementById("cTxt").textContent=ok?"Tiempo real activo":"Sin conexión";
-  document.getElementById("cBanner").classList.toggle("show",!ok);
-}
-function toast(msg,tipo="ok",dur=2800){
-  const cont=document.getElementById("toasts");
-  const el=document.createElement("div");
-  el.className=`toast ${tipo}`;el.textContent=msg;
-  cont.appendChild(el);
-  setTimeout(()=>{el.style.opacity="0";el.style.transition="opacity .35s";setTimeout(()=>el.remove(),360);},dur);
-}
-window.toast=toast;
-setInterval(()=>{renderGrid();renderProceso();actualizarStats();},30000);
+
+// Exponer para onclick en HTML
+window.mostrarToast = mostrarToast;
 </script>
 </body>
 </html>
