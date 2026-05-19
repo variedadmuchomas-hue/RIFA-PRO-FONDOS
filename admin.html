@@ -1500,7 +1500,7 @@ window.verNumeros = async function(rifaId, nombre) {
 
 // Copiar links
 window.copiarLink = function(rifaId) {
-  const url = `${location.origin}/r/${rifaId}`;
+  const url = `${location.origin}/index.html?id=${rifaId}`;
   navigator.clipboard.writeText(url);
   mostrarToast("🔗 Link del talonario copiado");
 };
