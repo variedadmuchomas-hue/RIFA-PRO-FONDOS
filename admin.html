@@ -1742,7 +1742,7 @@ window.confirmarEliminar = async function() {
 
 // Copiar links
 window.copiarLink = function(rifaId) {
- const url = `https://variedadmuchomas-hue.github.io/RIFA-PRO-FONDOS/talonario.html?id=${rifaId}`;
+ const url = `https://variedadmuchomas-hue.github.io/RIFA-PRO-FONDOS/index.html?id=${rifaId}`;
   navigator.clipboard.writeText(url);
   mostrarToast("🔗 Link del talonario copiado");
 };
@@ -1762,7 +1762,7 @@ window.copiarTexto = function(idEl, msg) {
 // Compartir por WhatsApp al cliente
 window.compartirWhatsApp = function(rifaId, nombreCliente, claveAdmin) {
 
-  const linkTalonario = `https://variedadmuchomas-hue.github.io/RIFA-PRO-FONDOS/talonario.html?id=${rifaId}`;
+  const linkTalonario = `https://variedadmuchomas-hue.github.io/RIFA-PRO-FONDOS/index.html?id=${rifaId}`;
 
   const linkAdmin = `https://variedadmuchomas-hue.github.io/RIFA-PRO-FONDOS/miadmin.html?id=${rifaId}`;
 
@@ -1876,7 +1876,7 @@ window.crearRifa = async function() {
 
     // Mostrar resultado
     const base = "https://variedadmuchomas-hue.github.io/RIFA-PRO-FONDOS";
-    document.getElementById("linkTalonario").textContent = `${base}/talonario.html?id=${rifaId}`;
+    document.getElementById("linkTalonario").textContent = `${base}/index.html?id=${rifaId}`;
     document.getElementById("linkAdmin").textContent     = `${base}/miadmin.html?id=${rifaId}`;
     document.getElementById("linkClave").textContent     = claveAdmin;
     document.getElementById("resultadoRifa").style.display = "block";
