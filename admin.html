@@ -1645,7 +1645,7 @@ window.verNumeros = async function(rifaId, nombre) {
 
 // Copiar links
 window.copiarLink = function(rifaId) {
-  const url = `${location.origin}/r/${rifaId}`;
+   const url = `${location.origin}/rifa.html?id=${rifaId}`;
   navigator.clipboard.writeText(url);
   mostrarToast("🔗 Link del talonario copiado");
 };
@@ -1664,7 +1664,7 @@ window.copiarTexto = function(idEl, msg) {
 
 // Compartir por WhatsApp al cliente
 window.compartirWhatsApp = function(rifaId, nombreCliente, claveAdmin) {
-  const linkTalonario = `${location.origin}/r/${rifaId}`;
+  const linkTalonario = `${location.origin}/rifa.html?id=${rifaId}`;
   const linkAdmin     = `${location.origin}/miadmin.html?id=${rifaId}`;
   const msg =
 `🎟️ *RIFA PRO FONDOS*
