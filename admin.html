@@ -1742,13 +1742,13 @@ window.confirmarEliminar = async function() {
 
 // Copiar links
 window.copiarLink = function(rifaId) {
-  const url = `${location.origin}/talonario.html?id=${rifaId}`;
+ const url = `https://variedadmuchomas-hue.github.io/RIFA-PRO-FONDOS/talonario.html?id=${rifaId}`;
   navigator.clipboard.writeText(url);
   mostrarToast("🔗 Link del talonario copiado");
 };
 
 window.copiarLinkAdmin = function(rifaId) {
-  const url = `${location.origin}/miadmin.html?id=${rifaId}`;
+  const url = `https://variedadmuchomas-hue.github.io/RIFA-PRO-FONDOS/miadmin.html?id=${rifaId}`;
   navigator.clipboard.writeText(url);
   mostrarToast("🔑 Link del mini-admin copiado");
 };
@@ -1761,8 +1761,11 @@ window.copiarTexto = function(idEl, msg) {
 
 // Compartir por WhatsApp al cliente
 window.compartirWhatsApp = function(rifaId, nombreCliente, claveAdmin) {
-  const linkTalonario = `${location.origin}/talonario.html?id=${rifaId}`;
-  const linkAdmin     = `${location.origin}/miadmin.html?id=${rifaId}`;
+
+  const linkTalonario = `https://variedadmuchomas-hue.github.io/RIFA-PRO-FONDOS/talonario.html?id=${rifaId}`;
+
+  const linkAdmin = `https://variedadmuchomas-hue.github.io/RIFA-PRO-FONDOS/miadmin.html?id=${rifaId}`;
+
   const msg =
 `🎟️ *RIFA PRO FONDOS*
 Hola ${nombreCliente}, aquí están los links de tu talonario:
@@ -1778,7 +1781,6 @@ ${linkAdmin}
 
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
 };
-
 // ════════════════════════════════════
 // CREAR RIFA
 // ════════════════════════════════════
