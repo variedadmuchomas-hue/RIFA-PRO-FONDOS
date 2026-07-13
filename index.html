@@ -1119,7 +1119,8 @@ function renderizarNumeros(numeros) {
   // Leer cantidad y dígitos de la rifa cargada
   const cantidad = _rifaData?.cantidadNumeros || 100;
   const digitos  = _rifaData?.digitos || 2;
-  const inicio   = cantidad === 100 ? 0 : 1;
+  const esMultiplo = (cantidad % 100 === 0);
+  const inicio   = esMultiplo ? 0 : 1;
 
   for (let i = inicio; i < inicio + cantidad; i++) {
     const num  = i.toString().padStart(digitos, "0");
