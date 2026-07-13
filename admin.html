@@ -991,12 +991,10 @@
             </div>
             <div class="form-group">
               <label>Cantidad de boletas (números)</label>
-              <select id="fCantidad" class="input">
-                <option value="100" selected>100 números (00 al 99)</option>
-                <option value="500">500 números (001 al 500)</option>
-                <option value="1000">1000 números (0001 al 1000)</option>
-              </select>
-              <span class="hint">Define cuántos números tendrá el talonario</span>
+              <input type="number" id="fCantidad" class="input"
+                     placeholder="Ej: 100" min="10" max="9999"
+                     value="100" oninput="previsualizarCantidad(this.value)">
+              <span class="hint" id="hintCantidad">Genera del 00 al 99 · El sistema calcula los dígitos automáticamente</span>
             </div>
             <div class="form-group">
               <label>Método de pago</label>
@@ -1797,6 +1795,23 @@ ${linkAdmin}
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
 };
 // ════════════════════════════════════
+// PREVISUALIZAR CANTIDAD DE BOLETAS
+// ════════════════════════════════════
+window.previsualizarCantidad = function(val) {
+  const n = parseInt(val) || 0;
+  const hint = document.getElementById("hintCantidad");
+  if (!hint) return;
+  if (n < 10) { hint.textContent = "Mínimo 10 números"; hint.style.color = "#fca5a5"; return; }
+  if (n > 9999) { hint.textContent = "Máximo 9999 números"; hint.style.color = "#fca5a5"; return; }
+  hint.style.color = "";
+  const digitos = n <= 99 ? 2 : n <= 999 ? 3 : 4;
+  const inicio  = n <= 99 ? 0 : 1;
+  const primerN = inicio.toString().padStart(digitos, "0");
+  const ultimoN = (inicio + n - 1).toString().padStart(digitos, "0");
+  hint.textContent = `Genera del ${primerN} al ${ultimoN} · ${n} números con ${digitos} dígitos`;
+};
+
+// ════════════════════════════════════
 // CREAR RIFA
 // ════════════════════════════════════
 window.crearRifa = async function() {
@@ -1817,7 +1832,17 @@ window.crearRifa = async function() {
   const causa           = document.getElementById("fCausa").value.trim();
   const diasLicencia    = parseInt(document.getElementById("fDiasLicencia").value);
   const cantidadBoletas = parseInt(document.getElementById("fCantidad").value) || 100;
-  const digitos = cantidadBoletas <= 99 ? 2 : cantidadBoletas <= 999 ? 3 : 4;
+  if (cantidadBoletas < 10 || cantidadBoletas > 9999) {
+    mostrarErrorCrear("La cantidad de boletas debe estar entre 10 y 9999");
+    btn.disabled = false; btn.textContent = "✅ Crear talonario completo";
+    return;
+  }
+  // Calcular dígitos y punto de inicio
+  // Si la cantidad termina en 00 exactas (100, 200, 1000...) inicia en 00/000
+  // Si no, inicia en 01/001 y termina en la cantidad exacta
+  const esMultiploCompleto = (cantidadBoletas % 100 === 0);
+  const digitos = cantidadBoletas < 100 ? 2 : cantidadBoletas < 1000 ? 3 : 4;
+  const inicio  = esMultiploCompleto ? 0 : 1;
 
   err.style.display = "none";
   document.getElementById("resultadoRifa").style.display = "none";
@@ -1828,6 +1853,8 @@ window.crearRifa = async function() {
   if (!claveAdmin)      { mostrarErrorCrear("La contraseña del mini-admin es requerida"); return; }
   if (!nombre)          { mostrarErrorCrear("El nombre de la rifa es requerido"); return; }
   if (!precioNumero)    { mostrarErrorCrear("El precio por número es requerido"); return; }
+  if (cantidadBoletas < 10)   { mostrarErrorCrear("La cantidad mínima de boletas es 10"); return; }
+  if (cantidadBoletas > 9999) { mostrarErrorCrear("La cantidad máxima de boletas es 9999"); return; }
 
   btn.disabled = true;
   btn.textContent = "⏳ Creando talonario...";
@@ -1875,7 +1902,6 @@ window.crearRifa = async function() {
 
     // Crear números según la cantidad y dígitos seleccionados
     const promesas = [];
-    const inicio = cantidadBoletas === 100 ? 0 : 1;
     for (let i = inicio; i < inicio + cantidadBoletas; i++) {
       const n = i.toString().padStart(digitos, "0");
       promesas.push(setDoc(doc(db,"rifas",rifaId,"numeros",n), {
