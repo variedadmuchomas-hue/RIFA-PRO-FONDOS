@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a0a0f">
+  <title>Mi Rifa — Panel Admin</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-base:          #0a0a0f;
+      --bg-surface:       #12121a;
+      --bg-elevated:      #1a1a26;
+      --bg-hover:         #22223a;
+      --accent-primary:   #6366f1;
+      --accent-secondary: #8b5cf6;
+      --accent-glow:      rgba(99,102,241,0.18);
+      --num-libre:        #22c55e;
+      --num-reservado:    #f59e0b;
+      --num-pagado:       #ef4444;
+      --text-primary:     #f1f5f9;
+      --text-secondary:   #94a3b8;
+      --text-muted:       #475569;
+      --border-subtle:    rgba(255,255,255,0.06);
+      --border-normal:    rgba(255,255,255,0.12);
+      --border-accent:    rgba(99,102,241,0.35);
+      --whatsapp:         #25d366;
+      --whatsapp-dark:    #128c7e;
+      --status-activa:    #22c55e;
+      --status-vencer:    #f59e0b;
+      --status-vencida:   #ef4444;
+      --status-congelada: #6366f1;
+      --shadow-card:      0 4px 24px rgba(0,0,0,0.4);
+      --shadow-glow:      0 0 20px rgba(99,102,241,0.12);
+      --radius-sm:   8px;
+      --radius-md:   12px;
+      --radius-lg:   16px;
+      --radius-xl:   24px;
+      --radius-full: 9999px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-base);
+      color: var(--text-primary);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ══════════════════════════════════
+       LOADING
+    ══════════════════════════════════ */
+    #loading {
+      position: fixed; inset: 0;
+      background: var(--bg-base);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 16px; z-index: 9999;
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border-normal);
+      border-top-color: var(--accent-primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    #loading p { color: var(--text-secondary); font-size: 13px; }
+
+    /* ══════════════════════════════════
+       ERROR FATAL
+    ══════════════════════════════════ */
+    #errorFatal {
+      display: none; position: fixed; inset: 0;
+      background: var(--bg-base);
+      flex-direction: column; align-items: center;
+      justify-content: center; text-align: center;
+      gap: 14px; padding: 32px; z-index: 9998;
+    }
+    #errorFatal .icon { font-size: 72px; opacity: 0.4; }
+    #errorFatal h2 { font-family:'Sora',sans-serif; font-size:22px; }
+    #errorFatal p  { color: var(--text-secondary); max-width: 300px; line-height: 1.7; }
+
+    /* ══════════════════════════════════
+       LOGIN
+    ══════════════════════════════════ */
+    #loginScreen {
+      display: none;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.1) 0%, transparent 65%);
+    }
+
+    .login-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-normal);
+      border-radius: var(--radius-xl);
+      padding: 36px 32px;
+      width: 100%; max-width: 380px;
+      box-shadow: var(--shadow-card), var(--shadow-glow);
+      animation: fadeInUp 0.3s ease;
+    }
+
+    .login-header { text-align: center; margin-bottom: 28px; }
+    .login-icon   { font-size: 44px; display: block; margin-bottom: 10px; }
+    .login-header h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: 20px; font-weight: 800;
+      background: linear-gradient(135deg, #f1f5f9, #a5b4fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 4px;
+    }
+    .login-header p { color: var(--text-muted); font-size: 13px; }
+    .login-rifa-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #a5b4fc;
+      background: var(--accent-glow);
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-full);
+      padding: 3px 12px;
+      display: inline-block;
+      margin-top: 8px;
+    }
+
+    .input-group { margin-bottom: 14px; }
+    .input-group label {
+      display: block; font-size: 11px;
+      color: var(--text-secondary); margin-bottom: 6px;
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .input {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-normal);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      padding: 12px 14px; font-size: 15px;
+      width: 100%; outline: none;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input:focus {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .input::placeholder { color: var(--text-muted); }
+
+    #loginError {
+      display: none;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.25);
+      border-radius: var(--radius-md);
+      padding: 10px 14px; font-size: 13px;
+      color: #fca5a5; margin-bottom: 14px;
+    }
+
+    /* ══════════════════════════════════
+       BOTONES
+    ══════════════════════════════════ */
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      color: white; border: none;
+      border-radius: var(--radius-md);
+      padding: 13px 24px; font-weight: 700;
+      font-size: 14px; cursor: pointer; width: 100%;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(99,102,241,0.35);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(99,102,241,0.45); }
+    .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+    .btn-secondary {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--border-normal);
+      border-radius: var(--radius-md);
+      padding: 10px 18px; font-weight: 600;
+      font-size: 13px; cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.15s;
+    }
+    .btn-secondary:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+
+    .btn-whatsapp {
+      background: var(--whatsapp); color: white;
+      border: none; border-radius: var(--radius-md);
+      padding: 11px 18px; font-weight: 700;
+      font-size: 13px; cursor: pointer;
+      display: flex; align-items: center;
+      gap: 8px; font-family: 'Inter', sans-serif;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(37,211,102,0.3);
+    }
+    .btn-whatsapp:hover { background: var(--whatsapp-dark); transform: translateY(-1px); }
+    .wsp-icon { width: 18px; height: 18px; fill: white; flex-shrink: 0; }
+
+    .btn-aprobar {
+      background: rgba(34,197,94,0.12);
+      color: var(--status-activa);
+      border: 1px solid rgba(34,197,94,0.3);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px; font-size: 12px;
+      font-weight: 600; cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.15s; white-space: nowrap;
+    }
+    .btn-aprobar:hover { background: rgba(34,197,94,0.22); }
+
+    .btn-liberar {
+      background: rgba(239,68,68,0.1);
+      color: var(--status-vencida);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px; font-size: 12px;
+      font-weight: 600; cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.15s;
+    }
+    .btn-liberar:hover { background: rgba(239,68,68,0.18); }
+
+    .btn-sm {
+      padding: 6px 12px; border-radius: var(--radius-sm);
+      font-size: 12px; font-weight: 600;
+      border: 1px solid var(--border-normal);
+      background: var(--bg-elevated);
+      color: var(--text-secondary); cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.15s; white-space: nowrap;
+    }
+    .btn-sm:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+
+    /* ══════════════════════════════════
+       PANEL PRINCIPAL
+    ══════════════════════════════════ */
+    #panel { display: none; }
+
+    /* Topbar */
+    .topbar {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 20px;
+      height: 56px;
+      display: flex; align-items: center;
+      justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 10px; }
+    .topbar-icon { font-size: 22px; }
+    .topbar-info h2 {
+      font-family: 'Sora', sans-serif;
+      font-size: 14px; font-weight: 700; line-height: 1.2;
+    }
+    .topbar-info .rifa-id-top {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; color: var(--text-muted);
+    }
+    .topbar-right { display: flex; align-items: center; gap: 8px; }
+
+    /* Banner alerta licencia */
+    .banner-licencia {
+      display: none;
+      background: rgba(245,158,11,0.1);
+      border-bottom: 1px solid rgba(245,158,11,0.25);
+      padding: 10px 20px;
+      font-size: 13px; color: var(--status-vencer);
+      font-weight: 500; text-align: center;
+    }
+
+    /* Tabs de navegación */
+    .tabs-nav {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      overflow-x: auto;
+      padding: 0 16px;
+      gap: 0;
+      scrollbar-width: none;
+    }
+    .tabs-nav::-webkit-scrollbar { display: none; }
+
+    .tab-btn {
+      padding: 14px 16px;
+      font-size: 13px; font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border: none; background: none;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: all 0.15s;
+      font-family: 'Inter', sans-serif;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .tab-btn:hover { color: var(--text-secondary); }
+    .tab-btn.active {
+      color: var(--accent-primary);
+      border-bottom-color: var(--accent-primary);
+    }
+    .tab-badge {
+      background: var(--num-reservado);
+      color: #000; border-radius: var(--radius-full);
+      padding: 1px 6px; font-size: 10px; font-weight: 700;
+    }
+
+    /* Contenido */
+    .content { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; }
+
+    /* Secciones */
+    .seccion { display: none; animation: fadeInUp 0.2s ease; }
+    .seccion.activa { display: block; }
+
+    /* ══════════════════════════════════
+       ESTADÍSTICAS
+    ══════════════════════════════════ */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    @media (min-width: 480px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
+
+    .stat-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 16px 14px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .stat-card:hover { border-color: var(--border-normal); }
+    .stat-icon  { font-size: 20px; display: block; margin-bottom: 6px; }
+    .stat-num   {
+      font-family: 'Sora', sans-serif;
+      font-size: 26px; font-weight: 800;
+      line-height: 1; display: block; margin-bottom: 4px;
+    }
+    .stat-num.verde    { color: var(--num-libre); }
+    .stat-num.amarillo { color: var(--num-reservado); }
+    .stat-num.rojo     { color: var(--num-pagado); }
+    .stat-num.indigo   { color: var(--accent-primary); }
+    .stat-label { font-size: 11px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Barra de progreso */
+    .progreso-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .progreso-row {
+      display: flex; justify-content: space-between;
+      font-size: 13px; color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+    .progreso-row strong { color: var(--text-primary); }
+    .progreso-track {
+      height: 8px; background: var(--bg-elevated);
+      border-radius: var(--radius-full); overflow: hidden;
+    }
+    .progreso-fill {
+      height: 100%; border-radius: var(--radius-full);
+      background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+      transition: width 0.6s ease;
+    }
+
+    /* Info rifa en dashboard */
+    .rifa-info-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    .rifa-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (min-width: 480px) { .rifa-info-grid { grid-template-columns: repeat(3, 1fr); } }
+    .rifa-info-item { display: flex; flex-direction: column; gap: 3px; }
+    .rifa-info-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600; }
+    .rifa-info-valor { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .rifa-info-valor.precio { color: var(--accent-primary); font-family: 'Sora', sans-serif; font-size: 16px; }
+
+    /* Link del talonario */
+    .link-talonario {
+      background: var(--accent-glow);
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .link-talonario-url {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; color: #a5b4fc;
+      flex: 1; overflow: hidden;
+      text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    /* ══════════════════════════════════
+       COMPRADORES
+    ══════════════════════════════════ */
+    .compradores-toolbar {
+      display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .filtro-tab {
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-size: 12px; font-weight: 600;
+      border: 1px solid var(--border-normal);
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.15s;
+    }
+    .filtro-tab.active, .filtro-tab:hover {
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+      background: var(--accent-glow);
+    }
+
+    .comprador-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      border-left: 4px solid transparent;
+      transition: all 0.15s;
+    }
+    .comprador-card:hover { border-color: var(--border-normal); }
+    .comprador-card.reservado { border-left-color: var(--num-reservado); }
+    .comprador-card.pagado    { border-left-color: var(--num-libre); }
+
+    .comprador-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px; font-weight: 700;
+      min-width: 44px; text-align: center;
+      color: var(--text-primary);
+    }
+    .comprador-num.reservado { color: var(--num-reservado); }
+    .comprador-num.pagado    { color: var(--num-libre); }
+
+    .comprador-info { flex: 1; min-width: 0; }
+    .comprador-nombre { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+    .comprador-tel    { font-size: 12px; color: var(--text-secondary); }
+    .comprador-tiempo { font-size: 11px; color: var(--text-muted); }
+
+    .comprador-acciones {
+      display: flex; gap: 6px; flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px; border-radius: var(--radius-full);
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .badge.activa    { background: rgba(34,197,94,0.12);  color: var(--status-activa); }
+    .badge.reservado { background: rgba(245,158,11,0.12); color: var(--status-vencer); }
+    .badge.vencida   { background: rgba(239,68,68,0.12);  color: var(--status-vencida); }
+    .badge.congelada { background: rgba(99,102,241,0.12); color: var(--status-congelada); }
+
+    .empty-state {
+      text-align: center; padding: 48px 24px;
+      color: var(--text-muted);
+    }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+
+    /* ══════════════════════════════════
+       EDITOR DE TALONARIO
+    ══════════════════════════════════ */
+    .editor-section {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      margin-bottom: 16px;
+    }
+    .editor-section-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 13px; font-weight: 700;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex; align-items: center; gap: 8px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+
+    .form-grid { display: grid; gap: 12px; }
+    .form-grid.cols2 { grid-template-columns: 1fr 1fr; }
+    @media (max-width: 480px) { .form-grid.cols2 { grid-template-columns: 1fr; } }
+
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group label {
+      font-size: 11px; color: var(--text-secondary);
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .form-group .hint { font-size: 11px; color: var(--text-muted); }
+
+    .wsp-preview {
+      background: var(--bg-elevated);
+      border: 1px solid rgba(37,211,102,0.2);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      font-size: 13px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .wsp-preview .wsp-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--whatsapp); flex-shrink: 0;
+      animation: pulse-green 2s infinite;
+    }
+    .wsp-preview span { color: var(--text-secondary); }
+    .wsp-preview strong { color: var(--whatsapp); }
+
+    /* ══════════════════════════════════
+       MODAL CONFIRMACIÓN
+    ══════════════════════════════════ */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(6px);
+      align-items: center; justify-content: center;
+      z-index: 1000; padding: 16px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-normal);
+      border-radius: var(--radius-xl);
+      padding: 28px 24px;
+      width: 100%; max-width: 380px;
+      position: relative;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+      animation: fadeInUp 0.25s ease;
+      text-align: center;
+    }
+    .modal-icon   { font-size: 48px; margin-bottom: 12px; display: block; }
+    .modal-title  { font-family:'Sora',sans-serif; font-size:18px; font-weight:700; margin-bottom:8px; }
+    .modal-desc   { font-size:13px; color:var(--text-secondary); margin-bottom:20px; line-height:1.6; }
+    .modal-desc strong { color: var(--accent-primary); }
+    .modal-btns   { display:flex; gap:10px; }
+    .modal-btns button { flex: 1; }
+
+    /* ══════════════════════════════════
+       TOAST
+    ══════════════════════════════════ */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-normal);
+      border-radius: var(--radius-full);
+      padding: 11px 20px;
+      font-size: 13px; font-weight: 500;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      z-index: 9999; white-space: nowrap;
+      animation: fadeInUp 0.25s ease;
+      border-left: 3px solid var(--accent-primary);
+    }
+
+    /* ══════════════════════════════════
+       ANIMACIONES
+    ══════════════════════════════════ */
+    @keyframes spin     { to { transform: rotate(360deg); } }
+    @keyframes fadeInUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes pulse-green {
+      0%,100% { box-shadow: 0 0 0 0 rgba(37,211,102,0.4); }
+      50%      { box-shadow: 0 0 0 5px rgba(37,211,102,0); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading">
+  <span style="font-size:44px">🎟️</span>
+  <div class="spinner"></div>
+  <p>Cargando tu panel...</p>
+</div>
+
+<!-- ERROR FATAL -->
+<div id="errorFatal">
+  <div class="icon">⚠️</div>
+  <h2 id="errorTitulo">Enlace inválido</h2>
+  <p id="errorDesc">Este enlace no es válido. Contacta al administrador de la plataforma.</p>
+</div>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-header">
+      <span class="login-icon">🎟️</span>
+      <h1>Panel de mi Rifa</h1>
+      <p>Gestiona tu talonario</p>
+      <span class="login-rifa-id" id="loginRifaId"></span>
+    </div>
+
+    <div id="loginError"></div>
+
+    <div class="input-group" style="margin-bottom:20px">
+      <label>Contraseña de acceso</label>
+      <input type="password" id="inputClave" class="input"
+             placeholder="••••••••" autocomplete="current-password">
+    </div>
+
+    <button class="btn-primary" id="btnLogin" onclick="hacerLogin()">
+      Ingresar a mi panel
+    </button>
+  </div>
+</div>
+
+<!-- PANEL PRINCIPAL -->
+<div id="panel">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-icon">🎟️</span>
+      <div class="topbar-info">
+        <h2 id="topbarNombre">Mi Rifa</h2>
+        <div class="rifa-id-top" id="topbarId"></div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-sm" onclick="verTalonario()">👁 Ver talonario</button>
+      <button class="btn-sm" onclick="cerrarSesion()">Salir</button>
+    </div>
+  </div>
+
+  <!-- Banner licencia -->
+  <div class="banner-licencia" id="bannerLicencia"></div>
+
+  <!-- Tabs -->
+  <div class="tabs-nav">
+    <button class="tab-btn active" id="tab-stats"       onclick="cambiarTab('stats',this)">
+      📊 Estadísticas
+    </button>
+    <button class="tab-btn" id="tab-compradores"        onclick="cambiarTab('compradores',this)">
+      📋 Compradores
+      <span class="tab-badge" id="badgeReservados" style="display:none">0</span>
+    </button>
+    <button class="tab-btn" id="tab-editor"             onclick="cambiarTab('editor',this)">
+      ✏️ Editar talonario
+    </button>
+  </div>
+
+  <!-- Contenido -->
+  <div class="content">
+
+    <!-- ── TAB ESTADÍSTICAS ── -->
+    <div class="seccion activa" id="sec-stats">
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-icon">🟢</span>
+          <span class="stat-num verde" id="statLibres">—</span>
+          <div class="stat-label">Disponibles</div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">🟡</span>
+          <span class="stat-num amarillo" id="statReservados">—</span>
+          <div class="stat-label">En proceso</div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">✅</span>
+          <span class="stat-num rojo" id="statPagados">—</span>
+          <div class="stat-label">Vendidos</div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">💰</span>
+          <span class="stat-num indigo" id="statRecaudado" style="font-size:18px">—</span>
+          <div class="stat-label">Recaudado</div>
+        </div>
+      </div>
+
+      <!-- Barra progreso -->
+      <div class="progreso-card">
+        <div class="progreso-row">
+          <span>Progreso de ventas</span>
+          <strong id="progresoTexto">0%</strong>
+        </div>
+        <div class="progreso-track">
+          <div class="progreso-fill" id="progresoFill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Info de la rifa -->
+      <div class="rifa-info-card">
+        <p style="font-size:12px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">Datos de tu rifa</p>
+        <div class="rifa-info-grid">
+          <div class="rifa-info-item">
+            <span class="rifa-info-label">Precio</span>
+            <span class="rifa-info-valor precio" id="infoPrecio">—</span>
+          </div>
+          <div class="rifa-info-item">
+            <span class="rifa-info-label">Lotería</span>
+            <span class="rifa-info-valor" id="infoLoteria">—</span>
+          </div>
+          <div class="rifa-info-item">
+            <span class="rifa-info-label">Sorteo</span>
+            <span class="rifa-info-valor" id="infoSorteo">—</span>
+          </div>
+          <div class="rifa-info-item">
+            <span class="rifa-info-label">Método de pago</span>
+            <span class="rifa-info-valor" id="infoMetodo">—</span>
+          </div>
+          <div class="rifa-info-item">
+            <span class="rifa-info-label">Tu WhatsApp</span>
+            <span class="rifa-info-valor" id="infoWsp">—</span>
+          </div>
+          <div class="rifa-info-item">
+            <span class="rifa-info-label">Licencia</span>
+            <span class="rifa-info-valor" id="infoLicencia">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Link del talonario -->
+      <p style="font-size:12px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">
+        🔗 Link de tu talonario (para compartir con compradores)
+      </p>
+      <div class="link-talonario">
+        <span class="link-talonario-url" id="linkTalonario"></span>
+        <button class="btn-sm" onclick="copiarLinkTalonario()">Copiar</button>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-whatsapp" style="flex:1;min-width:180px" onclick="compartirLinkWhatsApp()">
+          <svg class="wsp-icon" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.535 5.856L0 24l6.335-1.502A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.371l-.36-.214-3.733.885.918-3.638-.234-.374A9.768 9.768 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+          📲 Compartir talonario
+        </button>
+        <button class="btn-secondary" onclick="exportarCSV()">⬇ Exportar CSV</button>
+        <button class="btn-secondary" onclick="generarFlyer()" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;color:#fff">🖼️ Generar flyer</button>
+      </div>
+    </div>
+
+    <!-- ── TAB COMPRADORES ── -->
+    <div class="seccion" id="sec-compradores">
+
+      <div class="compradores-toolbar">
+        <button class="filtro-tab active" onclick="filtrarCompradores('todos',this)">Todos</button>
+        <button class="filtro-tab" onclick="filtrarCompradores('reservado',this)">⏳ En proceso</button>
+        <button class="filtro-tab" onclick="filtrarCompradores('pagado',this)">✅ Pagados</button>
+      </div>
+
+      <div id="listaCompradores">
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <p>Aún no hay reservas</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB EDITOR ── -->
+    <div class="seccion" id="sec-editor">
+
+      <!-- Encabezado -->
+      <div class="editor-section">
+        <div class="editor-section-title">🎨 Encabezado del talonario</div>
+        <div class="form-grid cols2">
+          <div class="form-group" style="grid-column:1/-1">
+            <label>Título principal</label>
+            <input type="text" id="eTitulo" class="input" placeholder="Ej: Rifa Navidad 2025">
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label>Subtítulo</label>
+            <input type="text" id="eSubtitulo" class="input" placeholder="Ej: Juega el 16 de diciembre">
+          </div>
+          <div class="form-group">
+            <label>Badge superior</label>
+            <input type="text" id="eBadge" class="input" placeholder="🎟️ Rifa Oficial">
+          </div>
+          <div class="form-group">
+            <label>Causa / descripción</label>
+            <input type="text" id="eCausa" class="input" placeholder="Fondos para el colegio">
+          </div>
+          <div class="form-group">
+            <label>Premio principal 🏆</label>
+            <input type="text" id="ePremio1" class="input" placeholder='Televisor Samsung 55"'>
+          </div>
+          <div class="form-group">
+            <label>Premio secundario 🥈</label>
+            <input type="text" id="ePremio2" class="input" placeholder="Bicicleta Trek">
+          </div>
+        </div>
+      </div>
+
+      <!-- Fotos -->
+      <div class="editor-section">
+        <div class="editor-section-title">🖼️ Fotos del talonario</div>
+        <div class="form-grid cols2">
+          <div class="form-group">
+            <label>URL foto izquierda</label>
+            <input type="url" id="eFotoIzq" class="input" placeholder="https://...">
+            <span class="hint">Pega la URL directa de la imagen</span>
+          </div>
+          <div class="form-group">
+            <label>URL foto derecha</label>
+            <input type="url" id="eFotoDer" class="input" placeholder="https://...">
+            <span class="hint">Pega la URL directa de la imagen</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rifa -->
+      <div class="editor-section">
+        <div class="editor-section-title">🎯 Datos de la rifa</div>
+        <div class="form-grid cols2">
+          <div class="form-group">
+            <label>Precio por número</label>
+            <input type="number" id="ePrecio" class="input" placeholder="20000" min="0">
+          </div>
+          <div class="form-group">
+            <label>Lotería</label>
+            <input type="text" id="eLoteria" class="input" placeholder="Lotería de Bogotá">
+          </div>
+          <div class="form-group">
+            <label>Fecha del sorteo</label>
+            <input type="date" id="eFechaSorteo" class="input">
+          </div>
+          <div class="form-group">
+            <label>Método de pago</label>
+            <input type="text" id="eMetodoPago" class="input" placeholder="Nequi">
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label>Número(s) de pago Nequi / cuenta</label>
+            <input type="text" id="eNequi" class="input" placeholder="3208871253, 3114571322">
+            <span class="hint">Separa con comas si son varios números</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- WhatsApp -->
+      <div class="editor-section">
+        <div class="editor-section-title">📲 Tu WhatsApp de aprobación</div>
+        <div class="form-group" style="margin-bottom:12px">
+          <label>Tu número de WhatsApp *</label>
+          <input type="tel" id="eWhatsApp" class="input" placeholder="3001234567" maxlength="15">
+          <span class="hint">Este número recibe los comprobantes de pago de tus compradores</span>
+        </div>
+        <div class="wsp-preview" id="wspPreview">
+          <div class="wsp-dot"></div>
+          <span>Botón del talonario enviará a: <strong id="wspPreviewNum">—</strong></span>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btnGuardar" onclick="guardarCambios()">
+        💾 Guardar todos los cambios
+      </button>
+
+      <p style="font-size:11px;color:var(--text-muted);margin-top:10px;text-align:center">
+        Los cambios se reflejan en tu talonario inmediatamente ✨
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL CONFIRMACIÓN ACCIÓN -->
+<div class="modal-overlay" id="modalConfirm">
+  <div class="modal-card">
+    <span class="modal-icon" id="confirmIcon">❓</span>
+    <div class="modal-title" id="confirmTitle">¿Confirmar?</div>
+    <div class="modal-desc"  id="confirmDesc"></div>
+    <div class="modal-btns">
+      <button class="btn-primary"   id="confirmOk"     onclick="ejecutarConfirm()">Confirmar</button>
+      <button class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════ -->
+<script type="module">
+import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, collection, onSnapshot, updateDoc, serverTimestamp, getDocs }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA4auC2caQVgCXvRnCMabDr2k8WVvCTzBw",
+  authDomain: "rifas-online-d0bae.firebaseapp.com",
+  projectId: "rifas-online-d0bae",
+  storageBucket: "rifas-online-d0bae.firebasestorage.app",
+  messagingSenderId: "905341315838",
+  appId: "1:905341315838:web:6b2d6321af6797643f93af"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+// ── Estado global ──
+let _rifaId, _rifaData;
+let _compradores   = [];
+let _filtroActual  = "todos";
+let _confirmAccion = null;
+let _unsubNumeros  = null;
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+async function init() {
+  const params  = new URLSearchParams(window.location.search);
+  _rifaId       = params.get("id");
+
+  if (!_rifaId) {
+    mostrarErrorFatal("Enlace inválido", "No se encontró el ID del talonario en la URL.");
+    return;
+  }
+
+  // Mostrar ID en login
+  document.getElementById("loginRifaId").textContent = _rifaId;
+
+  // Verificar sesión activa
+  const sesion = sessionStorage.getItem("clienteAdminRifaId");
+  if (sesion === _rifaId) {
+    // Cargar datos y mostrar panel
+    try {
+      const snap = await getDoc(doc(db, "rifas", _rifaId));
+      if (!snap.exists()) { mostrarErrorFatal("No encontrado","Este talonario no existe."); return; }
+      _rifaData = snap.data();
+      mostrarPanel();
+    } catch(e) {
+      mostrarErrorFatal("Error de conexión", "No se pudo conectar. Intenta de nuevo.");
+    }
+    return;
+  }
+
+  // Mostrar login
+  document.getElementById("loading").style.display    = "none";
+  document.getElementById("loginScreen").style.display = "flex";
+  setTimeout(() => document.getElementById("inputClave").focus(), 300);
+}
+
+// ══════════════════════════════════════
+// AUTH — LOGIN CLIENTE
+// ══════════════════════════════════════
+window.hacerLogin = async function() {
+  const clave = document.getElementById("inputClave").value.trim();
+  const btn   = document.getElementById("btnLogin");
+  const err   = document.getElementById("loginError");
+
+  if (!clave) { mostrarLoginError("Ingresa tu contraseña de acceso"); return; }
+
+  btn.disabled = true; btn.textContent = "Verificando...";
+  err.style.display = "none";
+
+  try {
+    const snap = await getDoc(doc(db, "rifas", _rifaId));
+
+    if (!snap.exists()) {
+      mostrarLoginError("Talonario no encontrado. Verifica el enlace.");
+      btn.disabled = false; btn.textContent = "Ingresar a mi panel"; return;
+    }
+
+    const data = snap.data();
+    if (data.claveAdmin !== clave) {
+      mostrarLoginError("Contraseña incorrecta. Verifica con tu administrador.");
+      btn.disabled = false; btn.textContent = "Ingresar a mi panel"; return;
+    }
+
+    sessionStorage.setItem("clienteAdminRifaId", _rifaId);
+    _rifaData = data;
+    mostrarPanel();
+
+  } catch(e) {
+    mostrarLoginError("Error de conexión. Intenta de nuevo.");
+    btn.disabled = false; btn.textContent = "Ingresar a mi panel";
+  }
+};
+
+// Enter en contraseña
+document.getElementById("inputClave").addEventListener("keydown", e => {
+  if (e.key === "Enter") window.hacerLogin();
+});
+
+function mostrarLoginError(msg) {
+  const err = document.getElementById("loginError");
+  err.textContent = "❌ " + msg;
+  err.style.display = "block";
+}
+
+window.cerrarSesion = function() {
+  sessionStorage.removeItem("clienteAdminRifaId");
+  window.location.reload();
+};
+
+// ══════════════════════════════════════
+// MOSTRAR PANEL
+// ══════════════════════════════════════
+function mostrarPanel() {
+  document.getElementById("loading").style.display    = "none";
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("panel").style.display      = "block";
+
+  // Topbar
+  document.getElementById("topbarNombre").textContent = _rifaData.titulo || _rifaData.nombre || "Mi Rifa";
+  document.getElementById("topbarId").textContent     = _rifaId;
+
+  // Link talonario
+  const link = `https://variedadmuchomas-hue.github.io/RIFA-PRO-FONDOS/index.html?id=${_rifaId}`;
+  document.getElementById("linkTalonario").textContent = link;
+
+  // Info rifa
+  document.getElementById("infoPrecio").textContent  = "$" + Number(_rifaData.precioNumero||0).toLocaleString("es-CO");
+  document.getElementById("infoLoteria").textContent = _rifaData.loteria   || "—";
+  document.getElementById("infoSorteo").textContent  = _rifaData.fechaSorteo || "—";
+  document.getElementById("infoMetodo").textContent  = _rifaData.metodoPago || "—";
+  document.getElementById("infoWsp").textContent     = _rifaData.clienteWhatsApp || "—";
+
+  // Licencia
+  const vence   = _rifaData.fechaVencimiento?.toDate?.() || new Date(_rifaData.fechaVencimiento);
+  const diasRest = Math.max(0, Math.floor((vence - new Date()) / 86400000));
+  const fechaStr = vence.toLocaleDateString("es-CO", { day:"2-digit", month:"long", year:"numeric" });
+  document.getElementById("infoLicencia").textContent = `${diasRest} días · vence ${fechaStr}`;
+  document.getElementById("infoLicencia").style.color =
+    diasRest <= 5 ? "var(--status-vencer)" : "var(--status-activa)";
+
+  // Banner si vence pronto
+  if (diasRest <= 5) {
+    const b = document.getElementById("bannerLicencia");
+    b.textContent = `⚠️ Tu licencia vence en ${diasRest} día(s) (${fechaStr}). Contacta al administrador para renovarla.`;
+    b.style.display = "block";
+  }
+
+  // Cargar editor con valores actuales
+  cargarEditor();
+
+  // Escuchar números en tiempo real
+  iniciarListeners();
+}
+
+// ══════════════════════════════════════
+// LISTENERS TIEMPO REAL
+// ══════════════════════════════════════
+function iniciarListeners() {
+  if (_unsubNumeros) _unsubNumeros();
+
+  _unsubNumeros = onSnapshot(collection(db, "rifas", _rifaId, "numeros"), snap => {
+    let libres = 0, reservados = 0, pagados = 0;
+    const lista = [];
+
+    snap.forEach(d => {
+      const data = d.data();
+      if (data.estado === "libre")     libres++;
+      if (data.estado === "reservado") reservados++;
+      if (data.estado === "pagado")    pagados++;
+      if (data.estado !== "libre") lista.push({ numero: d.id, ...data });
+    });
+
+    // Stats
+    document.getElementById("statLibres").textContent    = libres;
+    document.getElementById("statReservados").textContent = reservados;
+    document.getElementById("statPagados").textContent    = pagados;
+    document.getElementById("statRecaudado").textContent  =
+      "$" + (pagados * Number(_rifaData.precioNumero||0)).toLocaleString("es-CO");
+
+    const pct = Math.round((pagados / 100) * 100);
+    document.getElementById("progresoTexto").textContent = pct + "% vendido";
+    document.getElementById("progresoFill").style.width  = pct + "%";
+
+    // Badge de reservados en tab
+    const badge = document.getElementById("badgeReservados");
+    if (reservados > 0) {
+      badge.textContent    = reservados;
+      badge.style.display  = "inline";
+    } else {
+      badge.style.display = "none";
+    }
+
+    // Actualizar compradores
+    lista.sort((a, b) => {
+      if (a.estado === "pagado" && b.estado !== "pagado") return -1;
+      if (b.estado === "pagado" && a.estado !== "pagado") return  1;
+      return (b.tiempo?.seconds || 0) - (a.tiempo?.seconds || 0);
+    });
+    _compradores = lista;
+    renderizarCompradores();
+  });
+}
+
+// ══════════════════════════════════════
+// COMPRADORES
+// ══════════════════════════════════════
+function renderizarCompradores() {
+  const filtrados = _filtroActual === "todos"
+    ? _compradores
+    : _compradores.filter(c => c.estado === _filtroActual);
+
+  const c = document.getElementById("listaCompradores");
+
+  if (!filtrados.length) {
+    c.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <p>${_filtroActual === "todos" ? "Aún no hay reservas" : "No hay en esta categoría"}</p>
+      </div>`;
+    return;
+  }
+
+  c.innerHTML = filtrados.map(comp => {
+    const tiempo = comp.tiempo?.toDate?.()?.toLocaleString("es-CO",
+      { day:"2-digit", month:"short", hour:"2-digit", minute:"2-digit" }) || "";
+
+    const acciones = comp.estado === "reservado" ? `
+      <button class="btn-aprobar" onclick="aprobarPago('${comp.numero}','${comp.nombre||""}')">
+        ✅ Aprobar
+      </button>
+      <button class="btn-liberar" onclick="liberarNumero('${comp.numero}','${comp.nombre||""}')">
+        ✕ Liberar
+      </button>
+    ` : `
+      <span class="badge activa">✅ Pagado</span>
+    `;
+
+    return `
+      <div class="comprador-card ${comp.estado}">
+        <div class="comprador-num ${comp.estado}">${comp.numero}</div>
+        <div class="comprador-info">
+          <div class="comprador-nombre">${comp.nombre || "Sin nombre"}</div>
+          <div class="comprador-tel">📱 ${comp.telefono || "—"}</div>
+          <div class="comprador-tiempo">🕐 ${tiempo}</div>
+        </div>
+        <div class="comprador-acciones">${acciones}</div>
+      </div>`;
+  }).join("");
+}
+
+window.filtrarCompradores = function(estado, btn) {
+  _filtroActual = estado;
+  document.querySelectorAll(".filtro-tab").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderizarCompradores();
+};
+
+// Aprobar pago
+window.aprobarPago = function(numero, nombre) {
+  _confirmAccion = async () => {
+    await updateDoc(doc(db, "rifas", _rifaId, "numeros", numero), {
+      estado: "pagado", aprobado: true, fechaAprobacion: serverTimestamp()
+    });
+    mostrarToast(`✅ Número ${numero} marcado como pagado`);
+    cerrarModal();
+  };
+  abrirConfirm(
+    "✅", `Aprobar número ${numero}`,
+    `¿Confirmas el pago de <strong>${nombre}</strong> por el número <strong>${numero}</strong>?`
+  );
+};
+
+// Liberar número
+window.liberarNumero = function(numero, nombre) {
+  _confirmAccion = async () => {
+    await updateDoc(doc(db, "rifas", _rifaId, "numeros", numero), {
+      estado: "libre", nombre: "", telefono: "", tiempo: null, aprobado: false
+    });
+    mostrarToast(`🔓 Número ${numero} liberado`);
+    cerrarModal();
+  };
+  abrirConfirm(
+    "⚠️", `Liberar número ${numero}`,
+    `¿Cancelar la reserva de <strong>${nombre}</strong> y liberar el número <strong>${numero}</strong>? Esta acción no se puede deshacer.`
+  );
+};
+
+// ══════════════════════════════════════
+// EDITOR
+// ══════════════════════════════════════
+function cargarEditor() {
+  const d = _rifaData;
+  document.getElementById("eTitulo").value     = d.titulo     || d.nombre || "";
+  document.getElementById("eSubtitulo").value  = d.subtitulo  || "";
+  document.getElementById("eBadge").value      = d.badge      || "";
+  document.getElementById("eCausa").value      = d.causa      || "";
+  document.getElementById("ePremio1").value    = d.premio1    || "";
+  document.getElementById("ePremio2").value    = d.premio2    || "";
+  document.getElementById("eFotoIzq").value    = d.fotoIzquierda || "";
+  document.getElementById("eFotoDer").value    = d.fotoDerecha  || "";
+  document.getElementById("ePrecio").value     = d.precioNumero || "";
+  document.getElementById("eLoteria").value    = d.loteria    || "";
+  document.getElementById("eFechaSorteo").value= d.fechaSorteo || "";
+  document.getElementById("eMetodoPago").value = d.metodoPago || "";
+  document.getElementById("eNequi").value      = Array.isArray(d.nequi) ? d.nequi.join(", ") : (d.nequi || "");
+  document.getElementById("eWhatsApp").value   = d.clienteWhatsApp || "";
+  actualizarPreviewWsp();
+}
+
+// Preview WhatsApp en tiempo real
+document.getElementById("eWhatsApp").addEventListener("input", actualizarPreviewWsp);
+function actualizarPreviewWsp() {
+  const val = document.getElementById("eWhatsApp").value.trim().replace(/\D/g,"");
+  document.getElementById("wspPreviewNum").textContent = val ? val : "—";
+}
+
+window.guardarCambios = async function() {
+  const btn = document.getElementById("btnGuardar");
+  btn.disabled = true; btn.textContent = "⏳ Guardando...";
+
+  try {
+    const nequiRaw = document.getElementById("eNequi").value.trim();
+    const nequiArr = nequiRaw
+      ? nequiRaw.split(",").map(n => n.trim()).filter(Boolean)
+      : [];
+
+    const cambios = {
+      titulo:          document.getElementById("eTitulo").value.trim(),
+      subtitulo:       document.getElementById("eSubtitulo").value.trim(),
+      badge:           document.getElementById("eBadge").value.trim(),
+      causa:           document.getElementById("eCausa").value.trim(),
+      premio1:         document.getElementById("ePremio1").value.trim(),
+      premio2:         document.getElementById("ePremio2").value.trim(),
+      fotoIzquierda:   document.getElementById("eFotoIzq").value.trim(),
+      fotoDerecha:     document.getElementById("eFotoDer").value.trim(),
+      precioNumero:    parseInt(document.getElementById("ePrecio").value) || _rifaData.precioNumero,
+      loteria:         document.getElementById("eLoteria").value.trim(),
+      fechaSorteo:     document.getElementById("eFechaSorteo").value,
+      metodoPago:      document.getElementById("eMetodoPago").value.trim(),
+      nequi:           nequiArr,
+      clienteWhatsApp: document.getElementById("eWhatsApp").value.trim().replace(/\D/g,""),
+    };
+
+    // Whitelist — solo campos permitidos
+    const permitidos = ["badge","titulo","subtitulo","premio1","premio2",
+      "loteria","precioNumero","causa","fotoIzquierda","fotoDerecha",
+      "metodoPago","nequi","clienteWhatsApp","fechaSorteo"];
+    const filtrado = {};
+    permitidos.forEach(k => { if (cambios[k] !== undefined) filtrado[k] = cambios[k]; });
+
+    await updateDoc(doc(db, "rifas", _rifaId), filtrado);
+
+    // Actualizar datos locales
+    Object.assign(_rifaData, filtrado);
+    actualizarInfoStats();
+    mostrarToast("✅ Cambios guardados — tu talonario se actualizó en tiempo real");
+
+  } catch(e) {
+    mostrarToast("❌ Error al guardar: " + e.message, "error");
+  }
+
+  btn.disabled = false; btn.textContent = "💾 Guardar todos los cambios";
+};
+
+function actualizarInfoStats() {
+  document.getElementById("infoPrecio").textContent  = "$" + Number(_rifaData.precioNumero||0).toLocaleString("es-CO");
+  document.getElementById("infoLoteria").textContent = _rifaData.loteria   || "—";
+  document.getElementById("infoSorteo").textContent  = _rifaData.fechaSorteo || "—";
+  document.getElementById("infoMetodo").textContent  = _rifaData.metodoPago || "—";
+  document.getElementById("infoWsp").textContent     = _rifaData.clienteWhatsApp || "—";
+  document.getElementById("topbarNombre").textContent = _rifaData.titulo || _rifaData.nombre || "Mi Rifa";
+}
+
+// ══════════════════════════════════════
+// LINKS Y COMPARTIR
+// ══════════════════════════════════════
+window.copiarLinkTalonario = function() {
+  const url = `https://variedadmuchomas-hue.github.io/RIFA-PRO-FONDOS/index.html?id=${_rifaId}`;
+  navigator.clipboard.writeText(url);
+  mostrarToast("🔗 Link copiado al portapapeles");
+};
+window.verTalonario = function() {
+  window.open(`${location.origin}/r/${_rifaId}`, "_blank");
+};
+
+window.compartirLinkWhatsApp = function() {
+  const link = `${location.origin}/r/${_rifaId}`;
+  const msg  = `🎟️ *${_rifaData.titulo || _rifaData.nombre}*\n\n¡Participa en nuestra rifa!\n🔗 ${link}\n\nElige tu número y aparta tu boleta 🍀`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
+};
+
+window.exportarCSV = async function() {
+  try {
+    const snap  = await getDocs(collection(db, "rifas", _rifaId, "numeros"));
+    const filas = [["Número","Estado","Nombre","Teléfono","Tiempo"]];
+    snap.forEach(d => {
+      const data = d.data();
+      if (data.estado === "libre") return;
+      const tiempo = data.tiempo?.toDate?.()?.toLocaleString("es-CO") || "";
+      filas.push([d.id, data.estado, data.nombre||"", data.telefono||"", tiempo]);
+    });
+    const csv  = filas.map(f => f.map(v => `"${v}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type:"text/csv;charset=utf-8;" });
+    const a    = Object.assign(document.createElement("a"), {
+      href: URL.createObjectURL(blob),
+      download: `${_rifaId}-compradores.csv`
+    });
+    a.click();
+    mostrarToast("⬇ CSV exportado");
+  } catch(e) {
+    mostrarToast("❌ Error: " + e.message, "error");
+  }
+};
+
+// ══════════════════════════════════════
+// GENERAR FLYER
+// ══════════════════════════════════════
+window.generarFlyer = async function() {
+  try {
+    mostrarToast("🖼️ Generando flyer con QR...", "info");
+
+    const d = _rifaData;
+    const nombre   = d.titulo || d.nombre || "Rifa";
+    const precio   = "$" + Number(d.precioNumero || 0).toLocaleString("es-CO");
+    const sorteo   = d.fechaSorteo   || "Por definir";
+    const loteria  = d.loteria       || "—";
+    const metodo   = d.metodoPago    || "Nequi";
+    const premio1  = d.premio1       || "";
+    const wsp      = d.clienteWhatsApp || "";
+    const link     = `${location.origin}/index.html?id=${_rifaId}`;
+
+    // ── Generar QR en elemento oculto ──
+    const qrDiv = document.createElement("div");
+    qrDiv.style.cssText = "position:fixed;left:-9999px;top:0;background:white;padding:8px";
+    document.body.appendChild(qrDiv);
+
+    await new Promise((resolve) => {
+      new QRCode(qrDiv, {
+        text: link,
+        width: 200,
+        height: 200,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+      setTimeout(resolve, 400); // Dar tiempo a que renderice
+    });
+
+    const qrCanvas = qrDiv.querySelector("canvas");
+    const qrImg    = qrDiv.querySelector("img");
+
+    // ── Crear canvas del flyer ──
+    const W = 800, H = 1100;
+    const canvas = document.createElement("canvas");
+    canvas.width  = W;
+    canvas.height = H;
+    const ctx = canvas.getContext("2d");
+
+    // Fondo degradado
+    const grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0,   "#1a1a2e");
+    grad.addColorStop(0.5, "#16213e");
+    grad.addColorStop(1,   "#0f3460");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Borde naranja
+    ctx.strokeStyle = "#ffa100";
+    ctx.lineWidth   = 6;
+    ctx.strokeRect(16, 16, W - 32, H - 32);
+    ctx.strokeStyle = "rgba(255,161,0,0.3)";
+    ctx.lineWidth   = 1;
+    ctx.strokeRect(28, 28, W - 56, H - 56);
+
+    // Encabezado
+    ctx.font      = "bold 28px Arial";
+    ctx.fillStyle = "#ffa100";
+    ctx.textAlign = "center";
+    ctx.fillText("🎟️  RIFA OFICIAL  🎟️", W / 2, 85);
+
+    ctx.strokeStyle = "#ffa100";
+    ctx.lineWidth   = 2;
+    ctx.beginPath();
+    ctx.moveTo(60, 100); ctx.lineTo(W - 60, 100);
+    ctx.stroke();
+
+    // Nombre
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#ffffff";
+    let fs = 48;
+    ctx.font = `bold ${fs}px Arial`;
+    while (ctx.measureText(nombre.toUpperCase()).width > 680 && fs > 28) {
+      fs -= 2;
+      ctx.font = `bold ${fs}px Arial`;
+    }
+    ctx.fillText(nombre.toUpperCase(), W / 2, 168);
+
+    // Premio
+    if (premio1) {
+      ctx.font      = "24px Arial";
+      ctx.fillStyle = "#ffd700";
+      ctx.fillText("🏆  " + premio1, W / 2, 210);
+    }
+
+    // Franja precio
+    const fY = 240;
+    const grad2 = ctx.createLinearGradient(60, fY, W - 60, fY);
+    grad2.addColorStop(0, "#ffa100");
+    grad2.addColorStop(1, "#ff6b00");
+    ctx.fillStyle = grad2;
+    roundRect(ctx, 60, fY, W - 120, 78, 14); ctx.fill();
+    ctx.font      = "bold 17px Arial";
+    ctx.fillStyle = "#1a1a2e";
+    ctx.fillText("PRECIO POR NÚMERO", W / 2, fY + 26);
+    ctx.font      = "bold 34px Arial";
+    ctx.fillText(precio, W / 2, fY + 60);
+
+    // Tarjetas de datos
+    const tarjetas = [
+      { icono: "📅", label: "FECHA SORTEO", valor: sorteo },
+      { icono: "🎯", label: "LOTERÍA",      valor: loteria },
+      { icono: "💳", label: "PAGO VÍA",     valor: metodo },
+    ];
+    if (wsp) tarjetas.push({ icono: "📱", label: "WHATSAPP", valor: wsp });
+
+    const tY = 340, tH = 80, tGap = 10;
+    tarjetas.forEach((t, i) => {
+      const y = tY + i * (tH + tGap);
+      ctx.fillStyle = "rgba(255,255,255,0.06)";
+      roundRect(ctx, 60, y, W - 120, tH, 12); ctx.fill();
+      ctx.strokeStyle = "rgba(255,161,0,0.2)";
+      ctx.lineWidth = 1;
+      roundRect(ctx, 60, y, W - 120, tH, 12); ctx.stroke();
+      ctx.font      = "19px Arial";
+      ctx.fillStyle = "#ffa100";
+      ctx.textAlign = "left";
+      ctx.fillText(t.icono + "  " + t.label, 86, y + 28);
+      ctx.font      = "bold 20px Arial";
+      ctx.fillStyle = "#ffffff";
+      ctx.fillText(t.valor, 86, y + 56);
+    });
+
+    // ── Sección QR ──
+    const qrY = tY + tarjetas.length * (tH + tGap) + 22;
+    const qrSize = 200;
+
+    // Fondo blanco para el QR
+    ctx.fillStyle = "#ffffff";
+    roundRect(ctx, W/2 - qrSize/2 - 14, qrY - 14, qrSize + 28, qrSize + 28, 16);
+    ctx.fill();
+
+    // Dibujar QR
+    if (qrCanvas) {
+      ctx.drawImage(qrCanvas, W/2 - qrSize/2, qrY, qrSize, qrSize);
+    } else if (qrImg) {
+      await new Promise(res => {
+        const img = new Image();
+        img.onload = () => { ctx.drawImage(img, W/2 - qrSize/2, qrY, qrSize, qrSize); res(); };
+        img.src = qrImg.src;
+      });
+    }
+
+    // Texto debajo del QR
+    const textQrY = qrY + qrSize + 30;
+    ctx.font      = "bold 18px Arial";
+    ctx.fillStyle = "#ffa100";
+    ctx.textAlign = "center";
+    ctx.fillText("📲  ESCANEA Y ELIGE TU NÚMERO", W / 2, textQrY);
+
+    ctx.font      = "13px Arial";
+    ctx.fillStyle = "#64748b";
+    const linkCorto = link.length > 65 ? link.substring(0, 62) + "..." : link;
+    ctx.fillText(linkCorto, W / 2, textQrY + 24);
+
+    // Pie de página
+    ctx.fillStyle = "rgba(255,161,0,0.12)";
+    ctx.fillRect(0, H - 68, W, 68);
+    ctx.font      = "bold 18px Arial";
+    ctx.fillStyle = "#ffa100";
+    ctx.textAlign = "center";
+    ctx.fillText("⚡  RIFAS ONLINE  ⚡", W / 2, H - 36);
+    ctx.font      = "13px Arial";
+    ctx.fillStyle = "#64748b";
+    ctx.fillText("Plataforma oficial de rifas digitales", W / 2, H - 14);
+
+    // Limpiar div temporal
+    document.body.removeChild(qrDiv);
+
+    // ── Descargar ──
+    canvas.toBlob(blob => {
+      const a = Object.assign(document.createElement("a"), {
+        href: URL.createObjectURL(blob),
+        download: `flyer-${_rifaId}.png`
+      });
+      a.click();
+      mostrarToast("✅ Flyer con QR descargado — ¡listo para compartir!");
+    }, "image/png");
+
+  } catch(e) {
+    console.error(e);
+    mostrarToast("❌ Error generando flyer: " + e.message, "error");
+  }
+};
+
+// Helper: rectángulo redondeado
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+// ══════════════════════════════════════
+// TABS
+// ══════════════════════════════════════
+window.cambiarTab = function(id, btn) {
+  document.querySelectorAll(".seccion").forEach(s => s.classList.remove("activa"));
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("sec-" + id).classList.add("activa");
+  btn.classList.add("active");
+};
+
+// ══════════════════════════════════════
+// MODAL CONFIRMACIÓN
+// ══════════════════════════════════════
+function abrirConfirm(icon, titulo, desc) {
+  document.getElementById("confirmIcon").textContent  = icon;
+  document.getElementById("confirmTitle").textContent = titulo;
+  document.getElementById("confirmDesc").innerHTML    = desc;
+  document.getElementById("modalConfirm").classList.add("open");
+}
+
+window.ejecutarConfirm = async function() {
+  const btn = document.getElementById("confirmOk");
+  btn.disabled = true; btn.textContent = "⏳ Procesando...";
+  try {
+    if (_confirmAccion) await _confirmAccion();
+  } catch(e) {
+    mostrarToast("❌ Error: " + e.message, "error");
+    cerrarModal();
+  }
+  btn.disabled = false; btn.textContent = "Confirmar";
+  _confirmAccion = null;
+};
+
+window.cerrarModal = function() {
+  document.getElementById("modalConfirm").classList.remove("open");
+};
+
+document.getElementById("modalConfirm").addEventListener("click", function(e) {
+  if (e.target === this) window.cerrarModal();
+});
+
+// ══════════════════════════════════════
+// UTILIDADES
+// ══════════════════════════════════════
+function mostrarErrorFatal(titulo, desc) {
+  document.getElementById("loading").style.display   = "none";
+  document.getElementById("errorTitulo").textContent = titulo;
+  document.getElementById("errorDesc").textContent   = desc;
+  document.getElementById("errorFatal").style.display = "flex";
+}
+
+function mostrarToast(msg, tipo = "success") {
+  document.querySelectorAll(".toast").forEach(t => t.remove());
+  const colores = { success:"#22c55e", error:"#ef4444", warning:"#f59e0b", info:"#6366f1" };
+  const t = document.createElement("div");
+  t.className = "toast";
+  t.style.borderLeftColor = colores[tipo] || colores.info;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+// ── ARRANCAR ──
+init();
+</script>
+</body>
+</html>
