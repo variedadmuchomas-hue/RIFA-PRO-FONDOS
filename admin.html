@@ -1797,43 +1797,18 @@ ${linkAdmin}
 // ════════════════════════════════════
 // PREVISUALIZAR CANTIDAD DE BOLETAS
 // ════════════════════════════════════
-// ════════════════════════════════════
-// CALCULAR DÍGITOS E INICIO
-// Regla:
-//   100 exacto  → 2 dígitos, del 00 al 99
-//   1000 exacto → 3 dígitos, del 000 al 999
-//   cualquier otra cantidad → inicia en 1
-//   Ej: 50  → 2 dígitos, del 01 al 50
-//   Ej: 200 → 3 dígitos, del 001 al 200
-//   Ej: 500 → 3 dígitos, del 001 al 500
-// ════════════════════════════════════
-function calcularDigitosInicio(n) {
-  let digitos, inicio;
-  if (n === 100) {
-    digitos = 2; inicio = 0;   // 00 al 99
-  } else if (n === 1000) {
-    digitos = 3; inicio = 0;   // 000 al 999
-  } else if (n <= 99) {
-    digitos = 2; inicio = 1;   // 01 al N
-  } else if (n <= 999) {
-    digitos = 3; inicio = 1;   // 001 al N
-  } else {
-    digitos = 4; inicio = 1;   // 0001 al N
-  }
-  return { digitos, inicio };
-}
-
 window.previsualizarCantidad = function(val) {
   const n = parseInt(val) || 0;
   const hint = document.getElementById("hintCantidad");
   if (!hint) return;
-  if (n < 10)   { hint.textContent = "Mínimo 10 números"; hint.style.color = "#fca5a5"; return; }
+  if (n < 10) { hint.textContent = "Mínimo 10 números"; hint.style.color = "#fca5a5"; return; }
   if (n > 9999) { hint.textContent = "Máximo 9999 números"; hint.style.color = "#fca5a5"; return; }
-  hint.style.color = "#4ade80";
-  const { digitos, inicio } = calcularDigitosInicio(n);
+  hint.style.color = "";
+  const digitos = n <= 99 ? 2 : n <= 999 ? 3 : 4;
+  const inicio  = n <= 99 ? 0 : 1;
   const primerN = inicio.toString().padStart(digitos, "0");
   const ultimoN = (inicio + n - 1).toString().padStart(digitos, "0");
-  hint.textContent = `Genera del ${primerN} al ${ultimoN} · ${n} números`;
+  hint.textContent = `Genera del ${primerN} al ${ultimoN} · ${n} números con ${digitos} dígitos`;
 };
 
 // ════════════════════════════════════
@@ -1862,8 +1837,12 @@ window.crearRifa = async function() {
     btn.disabled = false; btn.textContent = "✅ Crear talonario completo";
     return;
   }
-  // Calcular dígitos y punto de inicio usando función centralizada
-  const { digitos, inicio } = calcularDigitosInicio(cantidadBoletas);
+  // Calcular dígitos y punto de inicio
+  // Si la cantidad termina en 00 exactas (100, 200, 1000...) inicia en 00/000
+  // Si no, inicia en 01/001 y termina en la cantidad exacta
+  const esMultiploCompleto = (cantidadBoletas % 100 === 0);
+  const digitos = cantidadBoletas < 100 ? 2 : cantidadBoletas < 1000 ? 3 : 4;
+  const inicio  = esMultiploCompleto ? 0 : 1;
 
   err.style.display = "none";
   document.getElementById("resultadoRifa").style.display = "none";
