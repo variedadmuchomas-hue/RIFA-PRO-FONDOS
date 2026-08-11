@@ -1,5 +1,0 @@
-{
-  "projects": {
-    "default": "rifas-online-d0bae"
-  }
-}
