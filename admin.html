@@ -1333,6 +1333,11 @@ const app  = initializeApp(firebaseConfig);
 const db   = getFirestore(app);
 const auth = getAuth(app);
 
+// ── Base URL dinámica: funciona igual en GitHub Pages (con subcarpeta), Firebase o dominio propio ──
+function obtenerBaseURL() {
+  return location.href.replace(/[^\/]*\.html.*$/, '');
+}
+
 // ── Estado global ──
 let _todasRifas    = [];
 let _rifaActual    = null;
@@ -1755,13 +1760,13 @@ window.confirmarEliminar = async function() {
 
 // Copiar links
 window.copiarLink = function(rifaId) {
- const url = `https://variedadmuchomas-hue.github.io/RIFA-PRO-FONDOS/index.html?id=${rifaId}`;
+ const url = `${obtenerBaseURL()}index.html?id=${rifaId}`;
   navigator.clipboard.writeText(url);
   mostrarToast("🔗 Link del talonario copiado");
 };
 
 window.copiarLinkAdmin = function(rifaId) {
-  const url = `https://variedadmuchomas-hue.github.io/RIFA-PRO-FONDOS/miadmin.html?id=${rifaId}`;
+  const url = `${obtenerBaseURL()}miadmin.html?id=${rifaId}`;
   navigator.clipboard.writeText(url);
   mostrarToast("🔑 Link del mini-admin copiado");
 };
@@ -1775,9 +1780,9 @@ window.copiarTexto = function(idEl, msg) {
 // Compartir por WhatsApp al cliente
 window.compartirWhatsApp = function(rifaId, nombreCliente, claveAdmin) {
 
-  const linkTalonario = `https://variedadmuchomas-hue.github.io/RIFA-PRO-FONDOS/index.html?id=${rifaId}`;
+  const linkTalonario = `${obtenerBaseURL()}index.html?id=${rifaId}`;
 
-  const linkAdmin = `https://variedadmuchomas-hue.github.io/RIFA-PRO-FONDOS/miadmin.html?id=${rifaId}`;
+  const linkAdmin = `${obtenerBaseURL()}miadmin.html?id=${rifaId}`;
 
   const msg =
 `🎟️ *RIFA PRO FONDOS*
@@ -1797,18 +1802,43 @@ ${linkAdmin}
 // ════════════════════════════════════
 // PREVISUALIZAR CANTIDAD DE BOLETAS
 // ════════════════════════════════════
+// ════════════════════════════════════
+// CALCULAR DÍGITOS E INICIO
+// Regla:
+//   100 exacto  → 2 dígitos, del 00 al 99
+//   1000 exacto → 3 dígitos, del 000 al 999
+//   cualquier otra cantidad → inicia en 1
+//   Ej: 50  → 2 dígitos, del 01 al 50
+//   Ej: 200 → 3 dígitos, del 001 al 200
+//   Ej: 500 → 3 dígitos, del 001 al 500
+// ════════════════════════════════════
+function calcularDigitosInicio(n) {
+  let digitos, inicio;
+  if (n === 100) {
+    digitos = 2; inicio = 0;   // 00 al 99
+  } else if (n === 1000) {
+    digitos = 3; inicio = 0;   // 000 al 999
+  } else if (n <= 99) {
+    digitos = 2; inicio = 1;   // 01 al N
+  } else if (n <= 999) {
+    digitos = 3; inicio = 1;   // 001 al N
+  } else {
+    digitos = 4; inicio = 1;   // 0001 al N
+  }
+  return { digitos, inicio };
+}
+
 window.previsualizarCantidad = function(val) {
   const n = parseInt(val) || 0;
   const hint = document.getElementById("hintCantidad");
   if (!hint) return;
-  if (n < 10) { hint.textContent = "Mínimo 10 números"; hint.style.color = "#fca5a5"; return; }
+  if (n < 10)   { hint.textContent = "Mínimo 10 números"; hint.style.color = "#fca5a5"; return; }
   if (n > 9999) { hint.textContent = "Máximo 9999 números"; hint.style.color = "#fca5a5"; return; }
-  hint.style.color = "";
-  const digitos = n <= 99 ? 2 : n <= 999 ? 3 : 4;
-  const inicio  = n <= 99 ? 0 : 1;
+  hint.style.color = "#4ade80";
+  const { digitos, inicio } = calcularDigitosInicio(n);
   const primerN = inicio.toString().padStart(digitos, "0");
   const ultimoN = (inicio + n - 1).toString().padStart(digitos, "0");
-  hint.textContent = `Genera del ${primerN} al ${ultimoN} · ${n} números con ${digitos} dígitos`;
+  hint.textContent = `Genera del ${primerN} al ${ultimoN} · ${n} números`;
 };
 
 // ════════════════════════════════════
@@ -1837,12 +1867,8 @@ window.crearRifa = async function() {
     btn.disabled = false; btn.textContent = "✅ Crear talonario completo";
     return;
   }
-  // Calcular dígitos y punto de inicio
-  // Si la cantidad termina en 00 exactas (100, 200, 1000...) inicia en 00/000
-  // Si no, inicia en 01/001 y termina en la cantidad exacta
-  const esMultiploCompleto = (cantidadBoletas % 100 === 0);
-  const digitos = cantidadBoletas < 100 ? 2 : cantidadBoletas < 1000 ? 3 : 4;
-  const inicio  = esMultiploCompleto ? 0 : 1;
+  // Calcular dígitos y punto de inicio usando función centralizada
+  const { digitos, inicio } = calcularDigitosInicio(cantidadBoletas);
 
   err.style.display = "none";
   document.getElementById("resultadoRifa").style.display = "none";
@@ -1919,9 +1945,9 @@ window.crearRifa = async function() {
     });
 
     // Mostrar resultado
-    const base = "https://variedadmuchomas-hue.github.io/RIFA-PRO-FONDOS";
-    document.getElementById("linkTalonario").textContent = `${base}/index.html?id=${rifaId}`;
-    document.getElementById("linkAdmin").textContent     = `${base}/miadmin.html?id=${rifaId}`;
+    const base = obtenerBaseURL();
+    document.getElementById("linkTalonario").textContent = `${base}index.html?id=${rifaId}`;
+    document.getElementById("linkAdmin").textContent     = `${base}miadmin.html?id=${rifaId}`;
     document.getElementById("linkClave").textContent     = claveAdmin;
     document.getElementById("resultadoRifa").style.display = "block";
 

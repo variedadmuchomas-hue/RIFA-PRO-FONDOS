@@ -913,6 +913,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
+// ── Base URL dinámica: funciona igual en GitHub Pages (con subcarpeta), Firebase o dominio propio ──
+function obtenerBaseURL() {
+  return location.href.replace(/[^\/]*\.html.*$/, '');
+}
+
 // ── Estado global ──
 let _rifaId, _rifaData;
 let _compradores   = [];
@@ -1022,7 +1027,7 @@ function mostrarPanel() {
   document.getElementById("topbarId").textContent     = _rifaId;
 
   // Link talonario
-  const link = `https://variedadmuchomas-hue.github.io/RIFA-PRO-FONDOS/index.html?id=${_rifaId}`;
+  const link = `${obtenerBaseURL()}index.html?id=${_rifaId}`;
   document.getElementById("linkTalonario").textContent = link;
 
   // Info rifa
@@ -1277,16 +1282,16 @@ function actualizarInfoStats() {
 // LINKS Y COMPARTIR
 // ══════════════════════════════════════
 window.copiarLinkTalonario = function() {
-  const url = `https://variedadmuchomas-hue.github.io/RIFA-PRO-FONDOS/index.html?id=${_rifaId}`;
+  const url = `${obtenerBaseURL()}index.html?id=${_rifaId}`;
   navigator.clipboard.writeText(url);
   mostrarToast("🔗 Link copiado al portapapeles");
 };
 window.verTalonario = function() {
-  window.open(`${location.origin}/r/${_rifaId}`, "_blank");
+  window.open(`${obtenerBaseURL()}index.html?id=${_rifaId}`, "_blank");
 };
 
 window.compartirLinkWhatsApp = function() {
-  const link = `${location.origin}/r/${_rifaId}`;
+  const link = `${obtenerBaseURL()}index.html?id=${_rifaId}`;
   const msg  = `🎟️ *${_rifaData.titulo || _rifaData.nombre}*\n\n¡Participa en nuestra rifa!\n🔗 ${link}\n\nElige tu número y aparta tu boleta 🍀`;
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
 };
@@ -1329,7 +1334,7 @@ window.generarFlyer = async function() {
     const metodo   = d.metodoPago    || "Nequi";
     const premio1  = d.premio1       || "";
     const wsp      = d.clienteWhatsApp || "";
-    const link     = `${location.origin}/index.html?id=${_rifaId}`;
+    const link     = `${obtenerBaseURL()}index.html?id=${_rifaId}`;
 
     // ── Generar QR en elemento oculto ──
     const qrDiv = document.createElement("div");
