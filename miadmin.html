@@ -1324,17 +1324,19 @@ window.exportarCSV = async function() {
 // ══════════════════════════════════════
 window.generarFlyer = async function() {
   try {
-    mostrarToast("🖼️ Generando flyer con QR...", "info");
+    mostrarToast("🖼️ Generando flyer festivo...", "info");
 
     const d = _rifaData;
-    const nombre   = d.titulo || d.nombre || "Rifa";
-    const precio   = "$" + Number(d.precioNumero || 0).toLocaleString("es-CO");
-    const sorteo   = d.fechaSorteo   || "Por definir";
-    const loteria  = d.loteria       || "—";
-    const metodo   = d.metodoPago    || "Nequi";
-    const premio1  = d.premio1       || "";
-    const wsp      = d.clienteWhatsApp || "";
-    const link     = `${obtenerBaseURL()}index.html?id=${_rifaId}`;
+    const nombre    = d.titulo || d.nombre || "Rifa";
+    const precio    = "$" + Number(d.precioNumero || 0).toLocaleString("es-CO");
+    const sorteo    = d.fechaSorteo   || "Por definir";
+    const loteria   = d.loteria       || "—";
+    const metodo    = d.metodoPago    || "Nequi";
+    const premio1   = d.premio1       || "";
+    const wsp       = d.clienteWhatsApp || "";
+    const link      = `${obtenerBaseURL()}index.html?id=${_rifaId}`;
+    const urlFotoIzq = d.fotoIzquierda || "";
+    const urlFotoDer = d.fotoDerecha   || "";
 
     // ── Generar QR en elemento oculto ──
     const qrDiv = document.createElement("div");
@@ -1344,85 +1346,121 @@ window.generarFlyer = async function() {
     await new Promise((resolve) => {
       new QRCode(qrDiv, {
         text: link,
-        width: 200,
-        height: 200,
+        width: 220,
+        height: 220,
         colorDark: "#000000",
         colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.H
       });
-      setTimeout(resolve, 400); // Dar tiempo a que renderice
+      setTimeout(resolve, 400);
     });
-
     const qrCanvas = qrDiv.querySelector("canvas");
     const qrImg    = qrDiv.querySelector("img");
 
-    // ── Crear canvas del flyer ──
-    const W = 800, H = 1100;
-    const canvas = document.createElement("canvas");
-    canvas.width  = W;
-    canvas.height = H;
-    const ctx = canvas.getContext("2d");
+    // ── Cargar fotos reales de premios (con tolerancia a CORS/errores) ──
+    const [fotoIzq, fotoDer] = await Promise.all([
+      cargarImagenSegura(urlFotoIzq),
+      cargarImagenSegura(urlFotoDer)
+    ]);
 
-    // Fondo degradado
-    const grad = ctx.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0,   "#1a1a2e");
-    grad.addColorStop(0.5, "#16213e");
-    grad.addColorStop(1,   "#0f3460");
-    ctx.fillStyle = grad;
+    // ── Crear canvas del flyer ──
+    const W = 900, H = 1650;
+    const canvas = document.createElement("canvas");
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    ctx.textAlign = "center";
+
+    // ══ Fondo: cielo festivo ══
+    const cielo = ctx.createLinearGradient(0, 0, 0, H);
+    cielo.addColorStop(0,    "#2f8fe0");
+    cielo.addColorStop(0.35, "#5fb3ec");
+    cielo.addColorStop(0.7,  "#a9dcf7");
+    cielo.addColorStop(1,    "#e8f6ff");
+    ctx.fillStyle = cielo;
     ctx.fillRect(0, 0, W, H);
 
-    // Borde naranja
-    ctx.strokeStyle = "#ffa100";
-    ctx.lineWidth   = 6;
-    ctx.strokeRect(16, 16, W - 32, H - 32);
-    ctx.strokeStyle = "rgba(255,161,0,0.3)";
-    ctx.lineWidth   = 1;
-    ctx.strokeRect(28, 28, W - 56, H - 56);
+    const glow = ctx.createRadialGradient(W/2, 40, 20, W/2, 40, 480);
+    glow.addColorStop(0, "rgba(255,255,255,0.35)");
+    glow.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, W, H);
 
-    // Encabezado
-    ctx.font      = "bold 28px Arial";
-    ctx.fillStyle = "#ffa100";
-    ctx.textAlign = "center";
-    ctx.fillText("🎟️  RIFA OFICIAL  🎟️", W / 2, 85);
+    // Nubes suaves cerca del fondo
+    dibujarNube(ctx, 140, H - 260, 220, 0.5);
+    dibujarNube(ctx, W - 160, H - 340, 260, 0.4);
+    dibujarNube(ctx, W/2, H - 140, 320, 0.55);
 
-    ctx.strokeStyle = "#ffa100";
-    ctx.lineWidth   = 2;
-    ctx.beginPath();
-    ctx.moveTo(60, 100); ctx.lineTo(W - 60, 100);
-    ctx.stroke();
+    // Confeti y destellos dorados esparcidos en los bordes
+    dibujarConfeti(ctx, W, H, 70);
+    dibujarDestellos(ctx, W, H, 22);
 
-    // Nombre
-    ctx.textAlign = "center";
-    ctx.fillStyle = "#ffffff";
-    let fs = 48;
-    ctx.font = `bold ${fs}px Arial`;
-    while (ctx.measureText(nombre.toUpperCase()).width > 680 && fs > 28) {
-      fs -= 2;
-      ctx.font = `bold ${fs}px Arial`;
-    }
-    ctx.fillText(nombre.toUpperCase(), W / 2, 168);
+    // ══ Listón "RIFA OFICIAL" ══
+    dibujarListon(ctx, W/2, 78, 440, 78, "RIFA OFICIAL");
 
-    // Premio
+    // ══ Título con efecto 3D por capas ══
+    let cursorY = 250;
+    cursorY = dibujarTitulo3D(ctx, nombre.toUpperCase(), W, cursorY);
+
+    // ══ Premio destacado (pill) ══
     if (premio1) {
-      ctx.font      = "24px Arial";
-      ctx.fillStyle = "#ffd700";
-      ctx.fillText("🏆  " + premio1, W / 2, 210);
+      cursorY += 14;
+      ctx.font = "bold 21px Arial";
+      let ptxt = "🏆  " + premio1.toUpperCase();
+      let pfs = 21;
+      while (ctx.measureText(ptxt).width > W - 160 && pfs > 14) {
+        pfs -= 1;
+        ctx.font = `bold ${pfs}px Arial`;
+      }
+      const pillW = Math.min(W - 100, ctx.measureText(ptxt).width + 60);
+      const pillH = 52;
+      ctx.fillStyle = "rgba(10,35,80,0.55)";
+      roundRect(ctx, W/2 - pillW/2, cursorY, pillW, pillH, pillH/2); ctx.fill();
+      ctx.strokeStyle = "rgba(255,215,90,0.85)";
+      ctx.lineWidth = 2;
+      roundRect(ctx, W/2 - pillW/2, cursorY, pillW, pillH, pillH/2); ctx.stroke();
+      ctx.fillStyle = "#ffffff";
+      ctx.fillText(ptxt, W/2, cursorY + pillH/2 + 7);
+      cursorY += pillH + 22;
+    } else {
+      cursorY += 20;
     }
 
-    // Franja precio
-    const fY = 240;
-    const grad2 = ctx.createLinearGradient(60, fY, W - 60, fY);
-    grad2.addColorStop(0, "#ffa100");
-    grad2.addColorStop(1, "#ff6b00");
-    ctx.fillStyle = grad2;
-    roundRect(ctx, 60, fY, W - 120, 78, 14); ctx.fill();
-    ctx.font      = "bold 17px Arial";
-    ctx.fillStyle = "#1a1a2e";
-    ctx.fillText("PRECIO POR NÚMERO", W / 2, fY + 26);
-    ctx.font      = "bold 34px Arial";
-    ctx.fillText(precio, W / 2, fY + 60);
+    // ══ Fotos reales de los premios (enmarcadas) ══
+    const tieneFotos = fotoIzq || fotoDer;
+    if (tieneFotos) {
+      const fotoH = 260;
+      const gap = 16;
+      const fotoW = fotoIzq && fotoDer ? (W - 120 - gap) / 2 : (W - 120);
+      let fx = 60;
+      if (fotoIzq) {
+        dibujarFotoEnmarcada(ctx, fotoIzq, fx, cursorY, fotoW, fotoH);
+        fx += fotoW + gap;
+      }
+      if (fotoDer) {
+        dibujarFotoEnmarcada(ctx, fotoDer, fotoIzq ? fx : 60, cursorY, fotoW, fotoH);
+      }
+      cursorY += fotoH + 24;
+    }
 
-    // Tarjetas de datos
+    // ══ Franja de precio ══
+    const fH = 88;
+    const grad2 = ctx.createLinearGradient(60, cursorY, W - 60, cursorY);
+    grad2.addColorStop(0, "#123a7a");
+    grad2.addColorStop(1, "#0c2a5c");
+    ctx.fillStyle = grad2;
+    roundRect(ctx, 60, cursorY, W - 120, fH, 16); ctx.fill();
+    ctx.strokeStyle = "rgba(255,215,90,0.8)";
+    ctx.lineWidth = 2;
+    roundRect(ctx, 60, cursorY, W - 120, fH, 16); ctx.stroke();
+    ctx.font = "bold 18px Arial";
+    ctx.fillStyle = "#ffd75a";
+    ctx.fillText("PRECIO POR NÚMERO", W/2, cursorY + 32);
+    ctx.font = "bold 40px Arial";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(precio, W/2, cursorY + 72);
+    cursorY += fH + 20;
+
+    // ══ Tarjetas de datos ══
     const tarjetas = [
       { icono: "📅", label: "FECHA SORTEO", valor: sorteo },
       { icono: "🎯", label: "LOTERÍA",      valor: loteria },
@@ -1430,79 +1468,82 @@ window.generarFlyer = async function() {
     ];
     if (wsp) tarjetas.push({ icono: "📱", label: "WHATSAPP", valor: wsp });
 
-    const tY = 340, tH = 80, tGap = 10;
+    const tH = 84, tGap = 12;
     tarjetas.forEach((t, i) => {
-      const y = tY + i * (tH + tGap);
-      ctx.fillStyle = "rgba(255,255,255,0.06)";
-      roundRect(ctx, 60, y, W - 120, tH, 12); ctx.fill();
-      ctx.strokeStyle = "rgba(255,161,0,0.2)";
-      ctx.lineWidth = 1;
-      roundRect(ctx, 60, y, W - 120, tH, 12); ctx.stroke();
-      ctx.font      = "19px Arial";
-      ctx.fillStyle = "#ffa100";
+      const y = cursorY + i * (tH + tGap);
+      ctx.fillStyle = "rgba(9,30,70,0.55)";
+      roundRect(ctx, 60, y, W - 120, tH, 14); ctx.fill();
+      ctx.strokeStyle = "rgba(255,215,90,0.35)";
+      ctx.lineWidth = 1.5;
+      roundRect(ctx, 60, y, W - 120, tH, 14); ctx.stroke();
       ctx.textAlign = "left";
-      ctx.fillText(t.icono + "  " + t.label, 86, y + 28);
-      ctx.font      = "bold 20px Arial";
+      ctx.font = "20px Arial";
+      ctx.fillStyle = "#ffd75a";
+      ctx.fillText(t.icono + "  " + t.label, 90, y + 30);
+      ctx.font = "bold 22px Arial";
       ctx.fillStyle = "#ffffff";
-      ctx.fillText(t.valor, 86, y + 56);
+      ctx.fillText(t.valor, 90, y + 60);
+      ctx.textAlign = "center";
     });
+    cursorY += tarjetas.length * (tH + tGap) + 16;
 
-    // ── Sección QR ──
-    const qrY = tY + tarjetas.length * (tH + tGap) + 22;
-    const qrSize = 200;
-
-    // Fondo blanco para el QR
+    // ══ Llamado a la acción ══
+    ctx.font = "bold 25px Arial";
     ctx.fillStyle = "#ffffff";
-    roundRect(ctx, W/2 - qrSize/2 - 14, qrY - 14, qrSize + 28, qrSize + 28, 16);
-    ctx.fill();
+    ctx.shadowColor = "rgba(10,35,80,0.5)";
+    ctx.shadowBlur = 6;
+    ctx.fillText("✨  ESCANEA O ABRE EL ENLACE  ✨", W/2, cursorY + 30);
+    ctx.fillStyle = "#ffe37a";
+    ctx.fillText("Y ESCOGE TÚ NÚMERO", W/2, cursorY + 66);
+    ctx.shadowBlur = 0;
+    cursorY += 96;
 
-    // Dibujar QR
+    // ══ QR + cajón en blanco para pegar el enlace ══
+    const boxSize = 260, boxGap = 20;
+    const totalBoxW = boxSize * 2 + boxGap;
+    const startX = W/2 - totalBoxW/2;
+
+    // QR
+    ctx.fillStyle = "#ffffff";
+    roundRect(ctx, startX, cursorY, boxSize, boxSize, 18); ctx.fill();
+    ctx.strokeStyle = "#123a7a";
+    ctx.lineWidth = 3;
+    roundRect(ctx, startX, cursorY, boxSize, boxSize, 18); ctx.stroke();
+    const qrPad = 24, qrSize = boxSize - qrPad * 2;
     if (qrCanvas) {
-      ctx.drawImage(qrCanvas, W/2 - qrSize/2, qrY, qrSize, qrSize);
+      ctx.drawImage(qrCanvas, startX + qrPad, cursorY + qrPad, qrSize, qrSize);
     } else if (qrImg) {
       await new Promise(res => {
         const img = new Image();
-        img.onload = () => { ctx.drawImage(img, W/2 - qrSize/2, qrY, qrSize, qrSize); res(); };
+        img.onload = () => { ctx.drawImage(img, startX + qrPad, cursorY + qrPad, qrSize, qrSize); res(); };
         img.src = qrImg.src;
       });
     }
 
-    // Texto debajo del QR
-    const textQrY = qrY + qrSize + 30;
-    ctx.font      = "bold 18px Arial";
-    ctx.fillStyle = "#ffa100";
-    ctx.textAlign = "center";
-    ctx.fillText("📲  ESCANEA Y ELIGE TU NÚMERO", W / 2, textQrY);
-
-    // ── Cajón en blanco: espacio reservado para pegar el enlace ──
-    // (a mano, con el editor de texto de WhatsApp al subirlo al Estado)
-    const boxY = textQrY + 14;
-    const boxH = 42;
-    const boxW = 560;
-    const boxX = W / 2 - boxW / 2;
-    ctx.setLineDash([8, 6]);
-    ctx.strokeStyle = "rgba(255,161,0,0.55)";
-    ctx.lineWidth   = 2;
-    roundRect(ctx, boxX, boxY, boxW, boxH, 10);
-    ctx.stroke();
+    // Cajón en blanco: espacio reservado para pegar el enlace a mano
+    const boxX2 = startX + boxSize + boxGap;
+    ctx.fillStyle = "#ffffff";
+    roundRect(ctx, boxX2, cursorY, boxSize, boxSize, 18); ctx.fill();
+    ctx.setLineDash([9, 7]);
+    ctx.strokeStyle = "#123a7a";
+    ctx.lineWidth = 3;
+    roundRect(ctx, boxX2 + 10, cursorY + 10, boxSize - 20, boxSize - 20, 14); ctx.stroke();
     ctx.setLineDash([]);
-    ctx.font      = "italic 12px Arial";
-    ctx.fillStyle = "rgba(148,163,184,0.65)";
-    ctx.textAlign = "center";
-    ctx.fillText("✍️  espacio para pegar el enlace de tu rifa", W / 2, boxY + boxH / 2 + 4);
+    ctx.font = "italic 13px Arial";
+    ctx.fillStyle = "rgba(18,58,122,0.55)";
+    wrapText(ctx, "✍️ espacio para pegar el enlace de tu rifa", boxX2 + boxSize/2, cursorY + boxSize/2 - 6, boxSize - 40, 18);
 
-    // Pie de página
-    ctx.fillStyle = "rgba(255,161,0,0.12)";
-    ctx.fillRect(0, H - 68, W, 68);
-    ctx.font      = "bold 18px Arial";
-    ctx.fillStyle = "#ffa100";
-    ctx.textAlign = "center";
-    ctx.fillText("⚡  RIFAS ONLINE  ⚡", W / 2, H - 36);
-    ctx.font      = "13px Arial";
-    ctx.fillStyle = "#64748b";
-    ctx.fillText("Plataforma oficial de rifas digitales", W / 2, H - 14);
+    cursorY += boxSize + 30;
 
-    // Limpiar div temporal
+    // ══ Pie de página (sobre el cielo, sin franja) ══
+    ctx.font = "bold 22px Arial";
+    ctx.fillStyle = "#0c2a5c";
+    ctx.fillText("⚡  RIFAS ONLINE  ⚡", W/2, cursorY + 10);
+    ctx.font = "14px Arial";
+    ctx.fillStyle = "rgba(12,42,92,0.7)";
+    ctx.fillText("Plataforma oficial de rifas digitales", W/2, cursorY + 36);
+
+    // Limpiar div temporal del QR
     document.body.removeChild(qrDiv);
 
     // ── Descargar ──
@@ -1512,7 +1553,7 @@ window.generarFlyer = async function() {
         download: `flyer-${_rifaId}.png`
       });
       a.click();
-      mostrarToast("✅ Flyer con QR descargado — ¡listo para compartir!");
+      mostrarToast("✅ Flyer festivo descargado — ¡listo para compartir!");
     }, "image/png");
 
   } catch(e) {
@@ -1520,6 +1561,197 @@ window.generarFlyer = async function() {
     mostrarToast("❌ Error generando flyer: " + e.message, "error");
   }
 };
+
+// ── Cargar imagen tolerando CORS/errores (no rompe el flyer si falla) ──
+function cargarImagenSegura(url) {
+  return new Promise(resolve => {
+    if (!url) { resolve(null); return; }
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload  = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+}
+
+// ── Dibuja una imagen recortada tipo "cover" dentro de un marco redondeado ──
+function dibujarFotoEnmarcada(ctx, img, x, y, w, h) {
+  const radius = 18;
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.35)";
+  ctx.shadowBlur = 18;
+  ctx.shadowOffsetY = 8;
+  ctx.fillStyle = "#ffffff";
+  roundRect(ctx, x, y, w, h, radius); ctx.fill();
+  ctx.restore();
+
+  const ir = img.width / img.height, tr = w / h;
+  let sx = 0, sy = 0, sw = img.width, sh = img.height;
+  if (ir > tr) { sw = img.height * tr; sx = (img.width - sw) / 2; }
+  else         { sh = img.width / tr;  sy = (img.height - sh) / 2; }
+
+  ctx.save();
+  roundRect(ctx, x + 4, y + 4, w - 8, h - 8, radius - 4);
+  ctx.clip();
+  ctx.drawImage(img, sx, sy, sw, sh, x + 4, y + 4, w - 8, h - 8);
+  ctx.restore();
+
+  ctx.strokeStyle = "rgba(255,215,90,0.9)";
+  ctx.lineWidth = 3;
+  roundRect(ctx, x + 4, y + 4, w - 8, h - 8, radius - 4);
+  ctx.stroke();
+}
+
+// ── Título grande con efecto de relieve (contorno oscuro + dorado + relleno claro) ──
+function dibujarTitulo3D(ctx, texto, W, startY) {
+  const maxWidth = W - 140;
+  let fs = 92;
+  ctx.font = `900 ${fs}px Arial`;
+
+  const palabras = texto.split(" ");
+  let lineas = [texto];
+  if (ctx.measureText(texto).width > maxWidth && palabras.length > 1) {
+    const mitad = Math.ceil(palabras.length / 2);
+    lineas = [palabras.slice(0, mitad).join(" "), palabras.slice(mitad).join(" ")];
+  }
+
+  const anchoMax = () => Math.max(...lineas.map(l => ctx.measureText(l).width));
+  ctx.font = `900 ${fs}px Arial`;
+  while (anchoMax() > maxWidth && fs > 40) {
+    fs -= 2;
+    ctx.font = `900 ${fs}px Arial`;
+  }
+
+  const lineHeight = fs * 1.05;
+  let y = startY;
+  ctx.textAlign = "center";
+  ctx.lineJoin = "round";
+
+  lineas.forEach(linea => {
+    ctx.lineWidth = fs * 0.16;
+    ctx.strokeStyle = "#0c2a5c";
+    ctx.strokeText(linea, W / 2, y);
+    ctx.lineWidth = fs * 0.07;
+    ctx.strokeStyle = "#ffd75a";
+    ctx.strokeText(linea, W / 2, y);
+    const g = ctx.createLinearGradient(0, y - fs, 0, y);
+    g.addColorStop(0, "#ffffff");
+    g.addColorStop(1, "#f1f5ff");
+    ctx.fillStyle = g;
+    ctx.fillText(linea, W / 2, y);
+    y += lineHeight;
+  });
+
+  return y - lineHeight + fs * 0.5;
+}
+
+// ── Listón curvo estilo banner con puntas ──
+function dibujarListon(ctx, cx, cy, w, h, texto) {
+  const x = cx - w/2, y = cy - h/2;
+  const tail = h * 0.4;
+
+  ctx.fillStyle = "#b8860b";
+  ctx.beginPath();
+  ctx.moveTo(x, y + h*0.25); ctx.lineTo(x - 26, y + h + tail); ctx.lineTo(x + 18, y + h); ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(x + w, y + h*0.25); ctx.lineTo(x + w + 26, y + h + tail); ctx.lineTo(x + w - 18, y + h); ctx.closePath(); ctx.fill();
+
+  const g = ctx.createLinearGradient(x, y, x, y + h);
+  g.addColorStop(0, "#ffe694");
+  g.addColorStop(0.5, "#f5b400");
+  g.addColorStop(1, "#d4880a");
+  ctx.fillStyle = g;
+  roundRect(ctx, x, y, w, h, h/2); ctx.fill();
+  ctx.strokeStyle = "#b8860b";
+  ctx.lineWidth = 2;
+  roundRect(ctx, x, y, w, h, h/2); ctx.stroke();
+
+  ctx.textAlign = "center";
+  ctx.font = "900 30px Arial";
+  ctx.fillStyle = "#0c2a5c";
+  ctx.fillText(texto, cx, cy + 10);
+}
+
+// ── Confeti disperso en los bordes ──
+function dibujarConfeti(ctx, W, H, cantidad) {
+  const colores = ["#ffd75a", "#ffffff", "#7dd3fc", "#fb923c", "#facc15"];
+  for (let i = 0; i < cantidad; i++) {
+    const enBordeIzq = Math.random() < 0.5;
+    const x = enBordeIzq ? Math.random() * W * 0.20 : W - Math.random() * W * 0.20;
+    const y = Math.random() * H * 0.92 + H * 0.02;
+    const w = 5 + Math.random() * 6, h = 10 + Math.random() * 10;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(Math.random() * Math.PI * 2);
+    ctx.globalAlpha = 0.55 + Math.random() * 0.35;
+    ctx.fillStyle = colores[Math.floor(Math.random() * colores.length)];
+    roundRect(ctx, -w/2, -h/2, w, h, 2); ctx.fill();
+    ctx.restore();
+  }
+}
+
+// ── Destellos (sparkles) dispersos en los bordes ──
+function dibujarDestellos(ctx, W, H, cantidad) {
+  for (let i = 0; i < cantidad; i++) {
+    const enBordeIzq = Math.random() < 0.5;
+    const x = enBordeIzq ? Math.random() * W * 0.18 : W - Math.random() * W * 0.18;
+    const y = Math.random() * H * 0.85 + H * 0.02;
+    const size = 6 + Math.random() * 12;
+    const color = Math.random() < 0.6 ? "#ffe694" : "#ffffff";
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.globalAlpha = 0.5 + Math.random() * 0.4;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, -size);
+    ctx.quadraticCurveTo(size*0.15, -size*0.15, size, 0);
+    ctx.quadraticCurveTo(size*0.15, size*0.15, 0, size);
+    ctx.quadraticCurveTo(-size*0.15, size*0.15, -size, 0);
+    ctx.quadraticCurveTo(-size*0.15, -size*0.15, 0, -size);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+// ── Nube suave (varias elipses translúcidas superpuestas) ──
+function dibujarNube(ctx, cx, cy, ancho, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = "#ffffff";
+  const partes = [
+    [0, 0, ancho * 0.35],
+    [-ancho * 0.28, ancho * 0.06, ancho * 0.24],
+    [ancho * 0.28, ancho * 0.06, ancho * 0.24],
+    [-ancho * 0.12, -ancho * 0.08, ancho * 0.2],
+    [ancho * 0.14, -ancho * 0.08, ancho * 0.2],
+  ];
+  partes.forEach(([dx, dy, r]) => {
+    ctx.beginPath();
+    ctx.ellipse(cx + dx, cy + dy, r, r * 0.62, 0, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.restore();
+}
+
+// ── Texto envuelto en varias líneas dentro de un ancho máximo ──
+function wrapText(ctx, texto, cx, cy, maxWidth, lineHeight) {
+  const palabras = texto.split(" ");
+  let lineas = [], actual = "";
+  palabras.forEach(p => {
+    const prueba = actual ? actual + " " + p : p;
+    if (ctx.measureText(prueba).width > maxWidth && actual) {
+      lineas.push(actual);
+      actual = p;
+    } else {
+      actual = prueba;
+    }
+  });
+  if (actual) lineas.push(actual);
+  const totalH = lineas.length * lineHeight;
+  let y = cy - totalH/2 + lineHeight * 0.7;
+  lineas.forEach(l => { ctx.fillText(l, cx, y); y += lineHeight; });
+}
 
 // Helper: rectángulo redondeado
 function roundRect(ctx, x, y, w, h, r) {
