@@ -795,6 +795,10 @@
             <input type="text" id="eBadge" class="input" placeholder="🎟️ Rifa Oficial">
           </div>
           <div class="form-group">
+            <label>Color del listón (flyer)</label>
+            <input type="color" id="eColorListon" class="input" value="#f5b400" style="height:44px;padding:4px">
+          </div>
+          <div class="form-group">
             <label>Causa / descripción</label>
             <input type="text" id="eCausa" class="input" placeholder="Fondos para el colegio">
           </div>
@@ -1200,6 +1204,7 @@ function cargarEditor() {
   document.getElementById("eTitulo").value     = d.titulo     || d.nombre || "";
   document.getElementById("eSubtitulo").value  = d.subtitulo  || "";
   document.getElementById("eBadge").value      = d.badge      || "";
+  document.getElementById("eColorListon").value = d.colorListon || "#f5b400";
   document.getElementById("eCausa").value      = d.causa      || "";
   document.getElementById("ePremio1").value    = d.premio1    || "";
   document.getElementById("ePremio2").value    = d.premio2    || "";
@@ -1235,6 +1240,7 @@ window.guardarCambios = async function() {
       titulo:          document.getElementById("eTitulo").value.trim(),
       subtitulo:       document.getElementById("eSubtitulo").value.trim(),
       badge:           document.getElementById("eBadge").value.trim(),
+      colorListon:     document.getElementById("eColorListon").value,
       causa:           document.getElementById("eCausa").value.trim(),
       premio1:         document.getElementById("ePremio1").value.trim(),
       premio2:         document.getElementById("ePremio2").value.trim(),
@@ -1249,7 +1255,7 @@ window.guardarCambios = async function() {
     };
 
     // Whitelist — solo campos permitidos
-    const permitidos = ["badge","titulo","subtitulo","premio1","premio2",
+    const permitidos = ["badge","colorListon","titulo","subtitulo","premio1","premio2",
       "loteria","precioNumero","causa","fotoIzquierda","fotoDerecha",
       "metodoPago","nequi","clienteWhatsApp","fechaSorteo"];
     const filtrado = {};
@@ -1337,6 +1343,11 @@ window.generarFlyer = async function() {
     const link      = `${obtenerBaseURL()}index.html?id=${_rifaId}`;
     const urlFotoIzq = d.fotoIzquierda || "";
     const urlFotoDer = d.fotoDerecha   || "";
+    const colorListon = d.colorListon || "#f5b400";
+    const textoListon = (d.badge || "Rifa Oficial")
+      .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}]/gu, "")
+      .trim()
+      .toUpperCase() || "RIFA OFICIAL";
 
     // ── Generar QR en elemento oculto ──
     const qrDiv = document.createElement("div");
@@ -1364,7 +1375,7 @@ window.generarFlyer = async function() {
     ]);
 
     // ── Crear canvas del flyer ──
-    const W = 900, H = 1650;
+    const W = 900, H = 1820;
     const canvas = document.createElement("canvas");
     canvas.width = W; canvas.height = H;
     const ctx = canvas.getContext("2d");
@@ -1394,8 +1405,8 @@ window.generarFlyer = async function() {
     dibujarConfeti(ctx, W, H, 70);
     dibujarDestellos(ctx, W, H, 22);
 
-    // ══ Listón "RIFA OFICIAL" ══
-    dibujarListon(ctx, W/2, 78, 440, 78, "RIFA OFICIAL");
+    // ══ Listón (texto y color personalizables desde "Badge superior" / "Color del listón") ══
+    dibujarListon(ctx, W/2, 78, 440, 78, textoListon, colorListon);
 
     // ══ Título con efecto 3D por capas ══
     let cursorY = 250;
@@ -1487,53 +1498,34 @@ window.generarFlyer = async function() {
     });
     cursorY += tarjetas.length * (tH + tGap) + 16;
 
-    // ══ Llamado a la acción ══
-    ctx.font = "bold 25px Arial";
-    ctx.fillStyle = "#ffffff";
-    ctx.shadowColor = "rgba(10,35,80,0.5)";
-    ctx.shadowBlur = 6;
-    ctx.fillText("✨  ESCANEA O ABRE EL ENLACE  ✨", W/2, cursorY + 30);
-    ctx.fillStyle = "#ffe37a";
-    ctx.fillText("Y ESCOGE TÚ NÚMERO", W/2, cursorY + 66);
-    ctx.shadowBlur = 0;
-    cursorY += 96;
+    // ══ Letrero "ESCANEA EL CÓDIGO Y ELIGE TU NÚMERO" (rojo diamantado) ══
+    cursorY = dibujarLetreroDiamante(ctx, "ESCANEA EL CÓDIGO", W/2, cursorY + 34, W - 140, W);
+    cursorY = dibujarLetreroDiamante(ctx, "Y ELIGE TU NÚMERO", W/2, cursorY + 46, W - 140, W);
+    cursorY += 26;
 
-    // ══ QR + cajón en blanco para pegar el enlace ══
-    const boxSize = 260, boxGap = 20;
-    const totalBoxW = boxSize * 2 + boxGap;
-    const startX = W/2 - totalBoxW/2;
-
-    // QR
+    // ══ QR centrado ══
+    const qrBoxSize = 300;
+    const qrBoxX = W/2 - qrBoxSize/2;
     ctx.fillStyle = "#ffffff";
-    roundRect(ctx, startX, cursorY, boxSize, boxSize, 18); ctx.fill();
+    roundRect(ctx, qrBoxX, cursorY, qrBoxSize, qrBoxSize, 20); ctx.fill();
     ctx.strokeStyle = "#123a7a";
     ctx.lineWidth = 3;
-    roundRect(ctx, startX, cursorY, boxSize, boxSize, 18); ctx.stroke();
-    const qrPad = 24, qrSize = boxSize - qrPad * 2;
+    roundRect(ctx, qrBoxX, cursorY, qrBoxSize, qrBoxSize, 20); ctx.stroke();
+    const qrPad = 28, qrSize = qrBoxSize - qrPad * 2;
     if (qrCanvas) {
-      ctx.drawImage(qrCanvas, startX + qrPad, cursorY + qrPad, qrSize, qrSize);
+      ctx.drawImage(qrCanvas, qrBoxX + qrPad, cursorY + qrPad, qrSize, qrSize);
     } else if (qrImg) {
       await new Promise(res => {
         const img = new Image();
-        img.onload = () => { ctx.drawImage(img, startX + qrPad, cursorY + qrPad, qrSize, qrSize); res(); };
+        img.onload = () => { ctx.drawImage(img, qrBoxX + qrPad, cursorY + qrPad, qrSize, qrSize); res(); };
         img.src = qrImg.src;
       });
     }
+    cursorY += qrBoxSize + 40;
 
-    // Cajón en blanco: espacio reservado para pegar el enlace a mano
-    const boxX2 = startX + boxSize + boxGap;
-    ctx.fillStyle = "#ffffff";
-    roundRect(ctx, boxX2, cursorY, boxSize, boxSize, 18); ctx.fill();
-    ctx.setLineDash([9, 7]);
-    ctx.strokeStyle = "#123a7a";
-    ctx.lineWidth = 3;
-    roundRect(ctx, boxX2 + 10, cursorY + 10, boxSize - 20, boxSize - 20, 14); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.font = "italic 13px Arial";
-    ctx.fillStyle = "rgba(18,58,122,0.55)";
-    wrapText(ctx, "✍️ espacio para pegar el enlace de tu rifa", boxX2 + boxSize/2, cursorY + boxSize/2 - 6, boxSize - 40, 18);
-
-    cursorY += boxSize + 30;
+    // ══ Letrero "ABRE EL ENLACE" (mismo estilo rojo diamantado) ══
+    cursorY = dibujarLetreroDiamante(ctx, "ABRE EL ENLACE", W/2, cursorY + 34, W - 140, W);
+    cursorY += 20;
 
     // ══ Pie de página (sobre el cielo, sin franja) ══
     ctx.font = "bold 22px Arial";
@@ -1645,31 +1637,100 @@ function dibujarTitulo3D(ctx, texto, W, startY) {
   return y - lineHeight + fs * 0.5;
 }
 
-// ── Listón curvo estilo banner con puntas ──
-function dibujarListon(ctx, cx, cy, w, h, texto) {
+// ── Listón curvo estilo banner con puntas (color personalizable) ──
+function dibujarListon(ctx, cx, cy, w, h, texto, colorBase = "#f5b400") {
   const x = cx - w/2, y = cy - h/2;
   const tail = h * 0.4;
+  const colorSombra = ajustarColor(colorBase, -60);
+  const colorClaro  = ajustarColor(colorBase, 90);
+  const colorOscuro = ajustarColor(colorBase, -70);
 
-  ctx.fillStyle = "#b8860b";
+  ctx.fillStyle = colorSombra;
   ctx.beginPath();
   ctx.moveTo(x, y + h*0.25); ctx.lineTo(x - 26, y + h + tail); ctx.lineTo(x + 18, y + h); ctx.closePath(); ctx.fill();
   ctx.beginPath();
   ctx.moveTo(x + w, y + h*0.25); ctx.lineTo(x + w + 26, y + h + tail); ctx.lineTo(x + w - 18, y + h); ctx.closePath(); ctx.fill();
 
   const g = ctx.createLinearGradient(x, y, x, y + h);
-  g.addColorStop(0, "#ffe694");
-  g.addColorStop(0.5, "#f5b400");
-  g.addColorStop(1, "#d4880a");
+  g.addColorStop(0, colorClaro);
+  g.addColorStop(0.5, colorBase);
+  g.addColorStop(1, colorOscuro);
   ctx.fillStyle = g;
   roundRect(ctx, x, y, w, h, h/2); ctx.fill();
-  ctx.strokeStyle = "#b8860b";
+  ctx.strokeStyle = colorSombra;
   ctx.lineWidth = 2;
   roundRect(ctx, x, y, w, h, h/2); ctx.stroke();
 
   ctx.textAlign = "center";
-  ctx.font = "900 30px Arial";
+  let fs = 30;
+  ctx.font = `900 ${fs}px Arial`;
+  while (ctx.measureText(texto).width > w - 50 && fs > 16) {
+    fs -= 1;
+    ctx.font = `900 ${fs}px Arial`;
+  }
   ctx.fillStyle = "#0c2a5c";
-  ctx.fillText(texto, cx, cy + 10);
+  ctx.fillText(texto, cx, cy + fs * 0.35);
+}
+
+// ── Ajusta el brillo de un color hex (positivo = más claro, negativo = más oscuro) ──
+function ajustarColor(hex, cantidad) {
+  let c = hex.replace("#", "");
+  if (c.length === 3) c = c.split("").map(ch => ch + ch).join("");
+  const num = parseInt(c, 16);
+  let r = (num >> 16) + cantidad;
+  let g = ((num >> 8) & 0xff) + cantidad;
+  let b = (num & 0xff) + cantidad;
+  r = Math.min(255, Math.max(0, r));
+  g = Math.min(255, Math.max(0, g));
+  b = Math.min(255, Math.max(0, b));
+  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+// ── Letrero "rojo diamantado": contorno oscuro + degradado rojo brillante + brillo diagonal ──
+function dibujarLetreroDiamante(ctx, texto, cx, y, maxWidth, W) {
+  let fs = 40;
+  ctx.font = `900 ${fs}px Arial`;
+  while (ctx.measureText(texto).width > maxWidth && fs > 18) {
+    fs -= 1;
+    ctx.font = `900 ${fs}px Arial`;
+  }
+
+  const offW = Math.min(Math.ceil(ctx.measureText(texto).width) + fs * 2, W);
+  const offH = Math.ceil(fs * 2.3);
+  const off = document.createElement("canvas");
+  off.width = offW; off.height = offH;
+  const octx = off.getContext("2d");
+  octx.font = `900 ${fs}px Arial`;
+  octx.textAlign = "center";
+  octx.lineJoin = "round";
+  const baseY = offH * 0.68;
+
+  // Contorno oscuro (profundidad)
+  octx.lineWidth = fs * 0.22;
+  octx.strokeStyle = "#4a0404";
+  octx.strokeText(texto, offW / 2, baseY);
+
+  // Relleno degradado rojo brillante
+  const g = octx.createLinearGradient(0, baseY - fs, 0, baseY + fs * 0.2);
+  g.addColorStop(0, "#ff5b6e");
+  g.addColorStop(0.45, "#e0102d");
+  g.addColorStop(1, "#8f0018");
+  octx.fillStyle = g;
+  octx.fillText(texto, offW / 2, baseY);
+
+  // Brillo diagonal tipo diamante, enmascarado al texto
+  octx.globalCompositeOperation = "source-atop";
+  const shine = octx.createLinearGradient(0, 0, offW, offH);
+  shine.addColorStop(0.32, "rgba(255,255,255,0)");
+  shine.addColorStop(0.48, "rgba(255,255,255,0.75)");
+  shine.addColorStop(0.62, "rgba(255,255,255,0)");
+  octx.fillStyle = shine;
+  octx.fillRect(0, 0, offW, offH);
+  octx.globalCompositeOperation = "source-over";
+
+  ctx.drawImage(off, cx - offW / 2, y - baseY);
+
+  return y + offH - baseY;
 }
 
 // ── Confeti disperso en los bordes ──
